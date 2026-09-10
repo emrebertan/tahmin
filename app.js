@@ -145,6 +145,18 @@ function setupEventListeners() {
     document.getElementById('h2hUserA').addEventListener('change', renderH2H);
     document.getElementById('h2hUserB').addEventListener('change', renderH2H);
 
+    document.getElementById('adminSaveBtn').addEventListener('click', async () => {
+        const statusSpan = document.getElementById('adminSaveStatus');
+        statusSpan.textContent = 'Kaydediliyor...';
+        const success = await saveDataToFirebase();
+        if (success) {
+            statusSpan.textContent = `Kaydedildi ✓ (${new Date().toLocaleTimeString('tr-TR')})`;
+        } else {
+            statusSpan.textContent = 'Kayıt başarısız!';
+            alert("Değişiklikler Firebase'e kaydedilemedi. İnternet bağlantınızı ve Firebase proje ayarlarını kontrol edin.");
+        }
+    });
+
     document.getElementById('exportBtn').addEventListener('click', () => {
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData));
         const dlAnchorElem = document.createElement('a');
@@ -435,13 +447,16 @@ function renderPredictions() {
     });
 
     document.querySelectorAll('.prediction-select').forEach(select => {
-        select.addEventListener('change', (e) => {
+        select.addEventListener('change', async (e) => {
             const matchId = e.target.dataset.matchId;
             if (!appData.users[currentUser].predictions) {
                 appData.users[currentUser].predictions = {};
             }
             appData.users[currentUser].predictions[matchId] = e.target.value;
-            saveDataToFirebase();
+            const success = await saveDataToFirebase();
+            if (!success) {
+                alert("Tahminin Firebase'e kaydedilemedi! İnternet bağlantını kontrol edip tekrar dene.");
+            }
             renderStats();
             renderLeaderboard();
         });
@@ -479,17 +494,21 @@ function renderAdmin() {
     });
 
     document.querySelectorAll('.admin-select').forEach(select => {
-        select.addEventListener('change', (e) => {
+        select.addEventListener('change', async (e) => {
             const matchId = e.target.dataset.matchId;
             const val = e.target.value;
             if (val === "") delete appData.results[matchId];
             else appData.results[matchId] = val;
-            saveDataToFirebase();
+
+            const success = await saveDataToFirebase();
+            if (!success) {
+                alert("Sonuç Firebase'e kaydedilemedi! İnternet bağlantınızı kontrol edip 'Değişiklikleri Firebase'e Kaydet' butonuyla tekrar deneyin.");
+            }
 
             const viewerPrediction = currentUser && appData.users[currentUser] && appData.users[currentUser].predictions
                 ? appData.users[currentUser].predictions[matchId]
                 : undefined;
-            if (val !== "" && viewerPrediction !== undefined && String(viewerPrediction) === String(val)) {
+            if (success && val !== "" && viewerPrediction !== undefined && String(viewerPrediction) === String(val)) {
                 triggerConfetti();
             }
 

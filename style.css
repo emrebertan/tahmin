@@ -138,6 +138,8 @@ main { flex: 1; padding: 2rem; max-width: 1200px; margin: 0 auto; width: 100%; }
 }
 .info-box.warning { background-color: rgba(255, 118, 117, 0.1); border-left-color: var(--error-color); }
 
+.admin-save-bar { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+
 .table-responsive { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; min-width: 600px; }
 th, td { padding: 1.2rem 1rem; text-align: left; border-bottom: 1px solid var(--border-color); }
