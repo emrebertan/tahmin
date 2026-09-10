@@ -1,4 +1,3 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -12,10 +11,7 @@
         <h1>Avrupa Tahmin Ligi</h1>
         <div class="user-controls">
             <select id="currentUserSelect"></select>
-            <form id="addUserForm">
-                <input type="text" id="newUserName" placeholder="YENİ KULLANICI ADI" required autocomplete="off">
-                <button type="submit">Ekle</button>
-            </form>
+            <button id="openNewUserModalBtn" class="btn-primary">+ Yeni Kullanıcı Ekle</button>
         </div>
     </header>
 
@@ -45,12 +41,18 @@
         </section>
 
         <section id="predictions" class="tab-content">
-            <div class="card">
-                <h2>Maç Tahminleri</h2>
-                <div class="info-box">
-                    <strong>Not:</strong> Değişiklikler otomatik kaydedilir. Geçmiş maçlara veya kayıt tarihinizden önceki maçlara tahmin yapılamaz.
-                </div>
-                <div class="matches-grid" id="predictionsGrid"></div>
+            <div class="info-box">
+                <strong>Not:</strong> Değişiklikler otomatik kaydedilir. Geçmiş maçlara tahmin yapılamaz. Temsilcilerimizin sonucuna göre (Galibiyet/Beraberlik/Mağlubiyet) tahmin yapınız.
+            </div>
+            
+            <div class="team-section gs-section">
+                <h2 class="team-title">🦁 Galatasaray Maçları</h2>
+                <div class="matches-grid" id="gsPredictionsGrid"></div>
+            </div>
+
+            <div class="team-section fb-section">
+                <h2 class="team-title">🦅 Fenerbahçe Maçları</h2>
+                <div class="matches-grid" id="fbPredictionsGrid"></div>
             </div>
         </section>
 
@@ -79,24 +81,64 @@
         </section>
 
         <section id="admin" class="tab-content">
-            <div class="card">
-                <h2>Maç Sonuçları (Admin)</h2>
-                <div class="info-box warning">
-                    <strong>Dikkat:</strong> Sonuçlar otomatik kaydedilir ve tüm kullanıcıların puanlarını etkiler. (0: Mağlubiyet, 1: Beraberlik, 3: Galibiyet)
-                </div>
-                <div class="matches-grid" id="adminGrid"></div>
+            <div class="info-box warning">
+                <strong>Admin Yetkisi:</strong> Sonuçlar girildiğinde tüm puanlamalar otomatik güncellenir. Temsilcilerimizin sonucuna göre giriş yapınız.
+            </div>
+            
+            <div class="team-section gs-section">
+                <h2 class="team-title">🦁 Galatasaray Maçları (Admin)</h2>
+                <div class="matches-grid" id="gsAdminGrid"></div>
+            </div>
+
+            <div class="team-section fb-section">
+                <h2 class="team-title">🦅 Fenerbahçe Maçları (Admin)</h2>
+                <div class="matches-grid" id="fbAdminGrid"></div>
             </div>
         </section>
     </main>
 
     <footer>
         <div class="data-controls">
-            <button id="exportBtn">Export JSON</button>
+            <button id="exportBtn" class="btn-secondary">Export JSON</button>
             <label for="importFile" class="file-btn">Import JSON</label>
             <input type="file" id="importFile" accept=".json">
-            <button id="resetBtn" class="danger">Tüm Verileri Sıfırla</button>
+            <button id="resetBtn" class="btn-danger">Tüm Verileri Sıfırla</button>
         </div>
     </footer>
+
+    <!-- Yeni Kullanıcı Ekleme Modalı -->
+    <div id="newUserModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Yeni Kullanıcı Kaydı</h2>
+                <span class="close-modal">&times;</span>
+            </div>
+            <form id="fullAddUserForm">
+                <div class="input-group">
+                    <label for="modalUserName">Ad Soyad:</label>
+                    <input type="text" id="modalUserName" placeholder="Örn: EMRE BERTAN" required autocomplete="off">
+                </div>
+                
+                <p class="modal-info">Lütfen aşağıdan temsilcilerimizin maçları için tahminlerinizi seçiniz. Geçmiş maçlar kilitlidir.</p>
+
+                <div class="modal-scroll-area">
+                    <div class="team-section gs-section">
+                        <h3 class="team-subtitle">Galatasaray</h3>
+                        <div class="modal-matches-grid" id="modalGsGrid"></div>
+                    </div>
+                    
+                    <div class="team-section fb-section">
+                        <h3 class="team-subtitle">Fenerbahçe</h3>
+                        <div class="modal-matches-grid" id="modalFbGrid"></div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn-primary w-100">Kullanıcıyı Kaydet ve Başla</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <script src="app.js"></script>
 </body>
