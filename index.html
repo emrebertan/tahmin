@@ -1,0 +1,103 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avrupa Tahmin Ligi</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Avrupa Tahmin Ligi</h1>
+        <div class="user-controls">
+            <select id="currentUserSelect"></select>
+            <form id="addUserForm">
+                <input type="text" id="newUserName" placeholder="YENİ KULLANICI ADI" required autocomplete="off">
+                <button type="submit">Ekle</button>
+            </form>
+        </div>
+    </header>
+
+    <nav>
+        <button class="tab-btn active" data-target="leaderboard">Liderlik Tablosu</button>
+        <button class="tab-btn" data-target="predictions">Tahminlerim</button>
+        <button class="tab-btn" data-target="stats">İstatistikler</button>
+        <button class="tab-btn" data-target="admin">Admin</button>
+    </nav>
+
+    <main>
+        <section id="leaderboard" class="tab-content active">
+            <div class="card table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Sıra</th>
+                            <th>İsim</th>
+                            <th>Puan</th>
+                            <th>Doğru Tahmin</th>
+                            <th>Başarı %</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboardBody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="predictions" class="tab-content">
+            <div class="card">
+                <h2>Maç Tahminleri</h2>
+                <div class="info-box">
+                    <strong>Not:</strong> Değişiklikler otomatik kaydedilir. Geçmiş maçlara veya kayıt tarihinizden önceki maçlara tahmin yapılamaz.
+                </div>
+                <div class="matches-grid" id="predictionsGrid"></div>
+            </div>
+        </section>
+
+        <section id="stats" class="tab-content">
+            <div class="card">
+                <h2 id="statsUserName">Kullanıcı İstatistikleri</h2>
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <h3>Toplam Puan</h3>
+                        <p id="statTotalPoints">0</p>
+                    </div>
+                    <div class="stat-box">
+                        <h3>Doğru Tahmin</h3>
+                        <p id="statCorrect">0</p>
+                    </div>
+                    <div class="stat-box">
+                        <h3>Yanlış Tahmin</h3>
+                        <p id="statIncorrect">0</p>
+                    </div>
+                    <div class="stat-box">
+                        <h3>Başarı Yüzdesi</h3>
+                        <p id="statPercentage">%0</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="admin" class="tab-content">
+            <div class="card">
+                <h2>Maç Sonuçları (Admin)</h2>
+                <div class="info-box warning">
+                    <strong>Dikkat:</strong> Sonuçlar otomatik kaydedilir ve tüm kullanıcıların puanlarını etkiler. (0: Mağlubiyet, 1: Beraberlik, 3: Galibiyet)
+                </div>
+                <div class="matches-grid" id="adminGrid"></div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="data-controls">
+            <button id="exportBtn">Export JSON</button>
+            <label for="importFile" class="file-btn">Import JSON</label>
+            <input type="file" id="importFile" accept=".json">
+            <button id="resetBtn" class="danger">Tüm Verileri Sıfırla</button>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
