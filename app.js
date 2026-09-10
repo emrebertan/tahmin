@@ -42,6 +42,7 @@ let isSaving = false;
 let statusChartInstance = null;
 let teamChartInstance = null;
 let leagueChartInstance = null;
+let lastLeaderName = null;
 const RESULT_LABELS = { "3": "Galibiyet", "1": "Beraberlik", "0": "Mağlubiyet" };
 
 function parseDate(trDate) {
@@ -131,6 +132,19 @@ function setupEventListeners() {
         renderAll();
     });
 
+    document.querySelectorAll('.stats-toggle-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const view = e.target.dataset.statsView;
+            document.querySelectorAll('.stats-toggle-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.stats-view').forEach(v => v.classList.remove('active'));
+            e.target.classList.add('active');
+            document.getElementById(view === 'general' ? 'generalStatsView' : 'individualStatsView').classList.add('active');
+        });
+    });
+
+    document.getElementById('h2hUserA').addEventListener('change', renderH2H);
+    document.getElementById('h2hUserB').addEventListener('change', renderH2H);
+
     document.getElementById('exportBtn').addEventListener('click', () => {
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData));
         const dlAnchorElem = document.createElement('a');
@@ -148,6 +162,7 @@ function updateUserSelect() {
     if (userNames.length === 0) {
         select.innerHTML = '<option value="">Kullanıcı Yok</option>';
         select.disabled = true;
+        populateH2HSelects(userNames);
         return;
     }
     
@@ -159,6 +174,35 @@ function updateUserSelect() {
         if (name === currentUser) option.selected = true;
         select.appendChild(option);
     });
+
+    populateH2HSelects(userNames);
+}
+
+function populateH2HSelects(userNames) {
+    const selectA = document.getElementById('h2hUserA');
+    const selectB = document.getElementById('h2hUserB');
+    const prevA = selectA.value;
+    const prevB = selectB.value;
+    selectA.innerHTML = '';
+    selectB.innerHTML = '';
+
+    if (userNames.length === 0) {
+        selectA.innerHTML = '<option value="">Kullanıcı Yok</option>';
+        selectB.innerHTML = '<option value="">Kullanıcı Yok</option>';
+        selectA.disabled = true;
+        selectB.disabled = true;
+        return;
+    }
+
+    selectA.disabled = false;
+    selectB.disabled = false;
+    userNames.forEach(name => {
+        selectA.appendChild(new Option(name, name));
+        selectB.appendChild(new Option(name, name));
+    });
+
+    selectA.value = userNames.includes(prevA) ? prevA : userNames[0];
+    selectB.value = userNames.includes(prevB) ? prevB : (userNames[1] || userNames[0]);
 }
 
 function renderAll() {
@@ -178,6 +222,7 @@ function renderAll() {
         document.getElementById('statsDetailBody').innerHTML = '';
     }
     renderAdmin();
+    renderH2H();
 }
 
 function getUserStats(userName) {
@@ -221,6 +266,117 @@ function getUserTeamPoints(userName, team) {
     return points;
 }
 
+function getMatchDistribution(matchId) {
+    const users = Object.values(appData.users || {});
+    let win = 0, draw = 0, lose = 0, total = 0;
+    users.forEach(user => {
+        const pred = user.predictions ? user.predictions[matchId] : undefined;
+        if (pred === "3") { win++; total++; }
+        else if (pred === "1") { draw++; total++; }
+        else if (pred === "0") { lose++; total++; }
+    });
+    if (total === 0) return { winPct: 0, drawPct: 0, losePct: 0, total: 0 };
+    return {
+        winPct: Math.round((win / total) * 100),
+        drawPct: Math.round((draw / total) * 100),
+        losePct: Math.round((lose / total) * 100),
+        total
+    };
+}
+
+function generateCommunityBarHTML(matchId) {
+    const dist = getMatchDistribution(matchId);
+    if (dist.total === 0) {
+        return '<div class="community-pulse"><small>Topluluk Nabızı: Henüz tahmin yok</small></div>';
+    }
+    return `
+        <div class="community-pulse">
+            <small>Topluluk Nabızı (${dist.total} tahmin)</small>
+            <div class="pulse-bar">
+                <div class="pulse-seg pulse-win" style="width:${dist.winPct}%" title="Galibiyet %${dist.winPct}"></div>
+                <div class="pulse-seg pulse-draw" style="width:${dist.drawPct}%" title="Beraberlik %${dist.drawPct}"></div>
+                <div class="pulse-seg pulse-lose" style="width:${dist.losePct}%" title="Mağlubiyet %${dist.losePct}"></div>
+            </div>
+            <div class="pulse-legend">
+                <span><i class="dot dot-win"></i>%${dist.winPct} Gal.</span>
+                <span><i class="dot dot-draw"></i>%${dist.drawPct} Ber.</span>
+                <span><i class="dot dot-lose"></i>%${dist.losePct} Mağ.</span>
+            </div>
+        </div>
+    `;
+}
+
+function getResolvedMatchesInOrder() {
+    return MATCH_DATA
+        .filter(match => appData.results[match.id] !== undefined && appData.results[match.id] !== null && appData.results[match.id] !== "")
+        .slice()
+        .sort((a, b) => parseDate(a.date).localeCompare(parseDate(b.date)));
+}
+
+function getUserBadges(userName) {
+    const user = appData.users[userName];
+    const badges = [];
+    if (!user) return badges;
+
+    const resolvedMatches = getResolvedMatchesInOrder();
+    if (resolvedMatches.length === 0) return badges;
+
+    let maxStreak = 0, currentStreak = 0;
+    let riskyHit = false;
+
+    resolvedMatches.forEach(match => {
+        const actual = appData.results[match.id];
+        const pred = user.predictions ? user.predictions[match.id] : undefined;
+        const isHit = pred !== undefined && pred !== null && pred !== "" && String(pred) === String(actual);
+
+        if (isHit) {
+            currentStreak++;
+            maxStreak = Math.max(maxStreak, currentStreak);
+
+            const dist = getMatchDistribution(match.id);
+            const pctMap = { "3": dist.winPct, "1": dist.drawPct, "0": dist.losePct };
+            if (dist.total > 0 && pctMap[String(pred)] <= 30) {
+                riskyHit = true;
+            }
+        } else {
+            currentStreak = 0;
+        }
+    });
+
+    if (maxStreak >= 3) {
+        badges.push({ icon: '🔥', label: 'Seri Bozmuyor', title: `${maxStreak} maç üst üste doğru bildi` });
+    }
+    if (riskyHit) {
+        badges.push({ icon: '🎲', label: 'Risk Sever', title: 'Ligin az tercih ettiği zor bir tahmini tuttu' });
+    }
+
+    const stats = getUserStats(userName);
+    if (stats.correct === resolvedMatches.length && stats.incorrect === 0) {
+        badges.push({ icon: '💯', label: 'Kusursuz', title: 'Sonuçlanan tüm maçları doğru bildi' });
+    }
+
+    return badges;
+}
+
+function triggerConfetti() {
+    const colors = ['#6c5ce7', '#00cec9', '#00b894', '#fbc531', '#e1b12c', '#ff7675'];
+    const container = document.createElement('div');
+    container.className = 'confetti-container';
+    document.body.appendChild(container);
+
+    for (let i = 0; i < 60; i++) {
+        const piece = document.createElement('span');
+        piece.className = 'confetti-piece';
+        piece.style.left = `${Math.random() * 100}vw`;
+        piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.animationDuration = `${2 + Math.random() * 1.5}s`;
+        piece.style.animationDelay = `${Math.random() * 0.4}s`;
+        container.appendChild(piece);
+    }
+
+    setTimeout(() => container.remove(), 4000);
+}
+
 function generateMatchCardHTML(match, currentPred, actualResult, isLocked, lockReason) {
     let statusHtml = '';
     if (actualResult !== undefined && actualResult !== null && actualResult !== "") {
@@ -248,6 +404,7 @@ function generateMatchCardHTML(match, currentPred, actualResult, isLocked, lockR
                     <option value="0" ${currentPred == "0" ? 'selected' : ''}>Mağlubiyet (0 Puan)</option>
                 </select>
             </div>
+            ${generateCommunityBarHTML(match.id)}
         </div>
     `;
 }
@@ -314,6 +471,7 @@ function renderAdmin() {
                         <option value="0" ${actualResult == "0" ? 'selected' : ''}>Temsilcimiz Kaybetti (0 Puan)</option>
                     </select>
                 </div>
+                ${generateCommunityBarHTML(match.id)}
             </div>
         `;
         if (match.team === 'GS') gsGrid.innerHTML += html;
@@ -327,6 +485,14 @@ function renderAdmin() {
             if (val === "") delete appData.results[matchId];
             else appData.results[matchId] = val;
             saveDataToFirebase();
+
+            const viewerPrediction = currentUser && appData.users[currentUser] && appData.users[currentUser].predictions
+                ? appData.users[currentUser].predictions[matchId]
+                : undefined;
+            if (val !== "" && viewerPrediction !== undefined && String(viewerPrediction) === String(val)) {
+                triggerConfetti();
+            }
+
             renderLeaderboard();
         });
     });
@@ -345,6 +511,12 @@ function renderLeaderboard() {
     const leaderboardData = userNames.map(name => { return { name, ...getUserStats(name) }; });
     leaderboardData.sort((a, b) => b.points - a.points || b.correct - a.correct || a.name.localeCompare(b.name));
 
+    const newLeader = leaderboardData[0].points > 0 ? leaderboardData[0].name : null;
+    if (lastLeaderName !== null && newLeader !== null && newLeader !== lastLeaderName) {
+        triggerConfetti();
+    }
+    lastLeaderName = newLeader;
+
     leaderboardData.forEach((data, index) => {
         const tr = document.createElement('tr');
         let rankStr = index + 1;
@@ -354,9 +526,13 @@ function renderLeaderboard() {
 
         if (index < 3) tr.classList.add(`rank-${index + 1}`);
 
+        const badgesHtml = getUserBadges(data.name)
+            .map(b => `<span class="badge-icon" title="${b.label}: ${b.title}">${b.icon}</span>`)
+            .join('');
+
         tr.innerHTML = `
             <td>${rankStr}</td>
-            <td><strong>${data.name}</strong></td>
+            <td><strong>${data.name}</strong>${badgesHtml}</td>
             <td>${data.points}</td>
             <td>${data.correct}/${data.totalMatches}</td>
             <td>%${data.percentage}</td>
@@ -465,6 +641,49 @@ function renderStatsCharts(stats, gsPoints, fbPoints) {
             scales: { x: { beginAtZero: true, ticks: { color: '#a4b0be' } }, y: { ticks: { color: '#a4b0be' } } },
             plugins: { legend: { display: false } }
         }
+    });
+}
+
+function renderH2H() {
+    const tbody = document.getElementById('h2hBody');
+    const selectA = document.getElementById('h2hUserA');
+    const selectB = document.getElementById('h2hUserB');
+    if (!tbody || !selectA || !selectB) return;
+
+    const userA = selectA.value;
+    const userB = selectB.value;
+    document.getElementById('h2hUserAHeader').textContent = userA || 'Kullanıcı A';
+    document.getElementById('h2hUserBHeader').textContent = userB || 'Kullanıcı B';
+
+    tbody.innerHTML = '';
+    if (!userA || !userB || !appData.users[userA] || !appData.users[userB]) {
+        tbody.innerHTML = '<tr><td colspan="5">Karşılaştırmak için iki kullanıcı seçin.</td></tr>';
+        return;
+    }
+
+    MATCH_DATA.forEach(match => {
+        const predA = appData.users[userA].predictions ? appData.users[userA].predictions[match.id] : undefined;
+        const predB = appData.users[userB].predictions ? appData.users[userB].predictions[match.id] : undefined;
+        const actualResult = appData.results[match.id];
+        const hasA = predA !== undefined && predA !== null && predA !== "";
+        const hasB = predB !== undefined && predB !== null && predB !== "";
+
+        let statusHtml = '<span class="status-badge status-pending">Eksik Tahmin</span>';
+        if (hasA && hasB) {
+            statusHtml = String(predA) === String(predB)
+                ? '<span class="h2h-match">Aynı ✓</span>'
+                : '<span class="h2h-diff">Farklı ✗</span>';
+        }
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${match.home} - ${match.away}</td>
+            <td>${hasA ? RESULT_LABELS[predA] : '-'}</td>
+            <td>${hasB ? RESULT_LABELS[predB] : '-'}</td>
+            <td>${actualResult !== undefined && actualResult !== null && actualResult !== "" ? RESULT_LABELS[actualResult] : '-'}</td>
+            <td>${statusHtml}</td>
+        `;
+        tbody.appendChild(tr);
     });
 }
 

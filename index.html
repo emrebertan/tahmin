@@ -22,6 +22,7 @@
         <button class="tab-btn active" data-target="leaderboard">Liderlik Tablosu</button>
         <button class="tab-btn" data-target="predictions">Tahminlerim</button>
         <button class="tab-btn" data-target="stats">İstatistikler</button>
+        <button class="tab-btn" data-target="h2h">Head-to-Head</button>
         <button class="tab-btn" data-target="admin">Admin</button>
     </nav>
 
@@ -60,65 +61,108 @@
         </section>
 
         <section id="stats" class="tab-content">
-            <div class="card">
-                <h2 id="statsUserName">Kullanıcı İstatistikleri</h2>
-                <p class="section-subtitle">Formda mısın yoksa dip mi yapıyorsun, hep birlikte görelim 💪</p>
-                <div class="stats-grid">
-                    <div class="stat-box">
-                        <h3>Toplam Puan</h3>
-                        <p id="statTotalPoints">0</p>
+            <div class="stats-toggle">
+                <button class="stats-toggle-btn active" data-stats-view="individual">Bireysel</button>
+                <button class="stats-toggle-btn" data-stats-view="general">Genel</button>
+            </div>
+
+            <div id="individualStatsView" class="stats-view active">
+                <div class="card">
+                    <h2 id="statsUserName">Kullanıcı İstatistikleri</h2>
+                    <p class="section-subtitle">Formda mısın yoksa dip mi yapıyorsun, hep birlikte görelim 💪</p>
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <h3>Toplam Puan</h3>
+                            <p id="statTotalPoints">0</p>
+                        </div>
+                        <div class="stat-box">
+                            <h3>Doğru Tahmin</h3>
+                            <p id="statCorrect">0</p>
+                        </div>
+                        <div class="stat-box">
+                            <h3>Yanlış Tahmin</h3>
+                            <p id="statIncorrect">0</p>
+                        </div>
+                        <div class="stat-box">
+                            <h3>Başarı Yüzdesi</h3>
+                            <p id="statPercentage">%0</p>
+                        </div>
+                        <div class="stat-box">
+                            <h3>Galatasaray Puanı</h3>
+                            <p id="statGsPoints">0</p>
+                        </div>
+                        <div class="stat-box">
+                            <h3>Fenerbahçe Puanı</h3>
+                            <p id="statFbPoints">0</p>
+                        </div>
                     </div>
-                    <div class="stat-box">
-                        <h3>Doğru Tahmin</h3>
-                        <p id="statCorrect">0</p>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="card chart-card">
+                        <h2>Tahmin Dağılımı</h2>
+                        <div class="chart-wrap"><canvas id="statusChart"></canvas></div>
                     </div>
-                    <div class="stat-box">
-                        <h3>Yanlış Tahmin</h3>
-                        <p id="statIncorrect">0</p>
+                    <div class="card chart-card">
+                        <h2>Galatasaray mı Fenerbahçe mi?</h2>
+                        <div class="chart-wrap"><canvas id="teamChart"></canvas></div>
                     </div>
-                    <div class="stat-box">
-                        <h3>Başarı Yüzdesi</h3>
-                        <p id="statPercentage">%0</p>
-                    </div>
-                    <div class="stat-box">
-                        <h3>Galatasaray Puanı</h3>
-                        <p id="statGsPoints">0</p>
-                    </div>
-                    <div class="stat-box">
-                        <h3>Fenerbahçe Puanı</h3>
-                        <p id="statFbPoints">0</p>
-                    </div>
+                </div>
+
+                <div class="card table-responsive" style="margin-top: 1.5rem;">
+                    <h2>Maç Bazlı Detay</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Maç</th>
+                                <th>Tarih</th>
+                                <th>Tahminim</th>
+                                <th>Sonuç</th>
+                                <th>Durum</th>
+                            </tr>
+                        </thead>
+                        <tbody id="statsDetailBody"></tbody>
+                    </table>
                 </div>
             </div>
 
-            <div class="charts-grid">
-                <div class="card chart-card">
-                    <h2>Tahmin Dağılımı</h2>
-                    <div class="chart-wrap"><canvas id="statusChart"></canvas></div>
+            <div id="generalStatsView" class="stats-view">
+                <div class="card">
+                    <h2>Genel Lig İstatistikleri</h2>
+                    <p class="section-subtitle">Kimin abi kimin çırak olduğu burada belli oluyor</p>
                 </div>
-                <div class="card chart-card">
-                    <h2>Galatasaray mı Fenerbahçe mi?</h2>
-                    <div class="chart-wrap"><canvas id="teamChart"></canvas></div>
+                <div class="charts-grid">
+                    <div class="card chart-card">
+                        <h2>Ligde Kim Abi Kim Değil</h2>
+                        <div class="chart-wrap"><canvas id="leagueChart"></canvas></div>
+                    </div>
                 </div>
-                <div class="card chart-card">
-                    <h2>Ligde Kim Abi Kim Değil</h2>
-                    <div class="chart-wrap"><canvas id="leagueChart"></canvas></div>
+            </div>
+        </section>
+
+        <section id="h2h" class="tab-content">
+            <div class="card">
+                <h2>İkili Karşılaştırma (Head-to-Head)</h2>
+                <p class="section-subtitle">İki isim seç, kim nereden farklı düşünmüş anında görelim</p>
+                <div class="h2h-selectors">
+                    <select id="h2hUserA"></select>
+                    <span class="h2h-vs">VS</span>
+                    <select id="h2hUserB"></select>
                 </div>
             </div>
 
             <div class="card table-responsive" style="margin-top: 1.5rem;">
-                <h2>Maç Bazlı Detay</h2>
                 <table>
                     <thead>
                         <tr>
                             <th>Maç</th>
-                            <th>Tarih</th>
-                            <th>Tahminim</th>
+                            <th id="h2hUserAHeader">Kullanıcı A</th>
+                            <th id="h2hUserBHeader">Kullanıcı B</th>
                             <th>Sonuç</th>
                             <th>Durum</th>
                         </tr>
                     </thead>
-                    <tbody id="statsDetailBody"></tbody>
+                    <tbody id="h2hBody"></tbody>
                 </table>
             </div>
         </section>

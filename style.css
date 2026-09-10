@@ -181,6 +181,50 @@ tr:hover { background-color: var(--surface-hover); }
 .chart-card h2 { font-size: 1.1rem; margin-bottom: 1rem; }
 .chart-wrap { position: relative; height: 280px; }
 
+.stats-toggle { display: flex; gap: 0.6rem; margin-bottom: 1.5rem; }
+.stats-toggle-btn { background-color: var(--surface-color); color: var(--text-secondary); border: 1px solid var(--border-color); }
+.stats-toggle-btn.active { background-color: var(--primary-color); color: #fff; border-color: var(--primary-color); }
+.stats-view { display: none; }
+.stats-view.active { display: block; }
+
+.badge-icon { margin-left: 0.35rem; font-size: 1rem; cursor: default; }
+
+.community-pulse { display: flex; flex-direction: column; gap: 0.4rem; }
+.community-pulse small { color: var(--text-secondary); font-size: 0.75rem; }
+.pulse-bar { display: flex; width: 100%; height: 8px; border-radius: 999px; overflow: hidden; background-color: var(--border-color); }
+.pulse-seg { height: 100%; }
+.pulse-win { background-color: var(--success-color); }
+.pulse-draw { background-color: var(--primary-color); }
+.pulse-lose { background-color: var(--error-color); }
+.pulse-legend { display: flex; gap: 0.8rem; font-size: 0.7rem; color: var(--text-secondary); flex-wrap: wrap; }
+.pulse-legend .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 0.3rem; }
+.dot-win { background-color: var(--success-color); }
+.dot-draw { background-color: var(--primary-color); }
+.dot-lose { background-color: var(--error-color); }
+
+.h2h-selectors { display: flex; align-items: center; gap: 1rem; margin-top: 1.2rem; flex-wrap: wrap; }
+.h2h-selectors select { flex: 1; min-width: 180px; }
+.h2h-vs { font-weight: 700; color: var(--text-secondary); }
+.h2h-match { color: var(--success-color); font-weight: 700; }
+.h2h-diff { color: var(--error-color); font-weight: 700; }
+
+.confetti-container { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 9999; }
+.confetti-piece {
+    position: absolute;
+    top: -10px;
+    width: 8px;
+    height: 14px;
+    opacity: 0.9;
+    border-radius: 2px;
+    animation-name: confetti-fall;
+    animation-timing-function: ease-in;
+    animation-fill-mode: forwards;
+}
+@keyframes confetti-fall {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(105vh) rotate(540deg); opacity: 0; }
+}
+
 footer { background-color: var(--surface-color); padding: 2rem; border-top: 1px solid var(--border-color); margin-top: auto; }
 .data-controls { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
 
