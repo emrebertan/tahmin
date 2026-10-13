@@ -11,6 +11,10 @@
 - Mobil başlık için UEFA wordmark'ı beyaz düzenlendi, takım armaları ve maç kartları küçültüldü; küçük ekranda genel bakış başlığı sızıntısı giderildi.
 - Sezon istatistikleri takım sonuçları, topluluk tercihleri ve maç bazında isabet oranını içerir.
 - Yönetim ekranı, sonuç kaydı, yedek indirme ve Firebase veri şeması korunmuştur.
+- Üst marka alanı Şampiyonlar Ligi arması ve arka planı şeffaf `_crew` logosuyla yenilendi; “Tahmin Ligi” metni ve yıldız süsleri kaldırıldı.
+- Bağlantı metni, mavi/kırmızı erişilebilir durum LED'iyle değiştirildi; sayfa numaraları ve liderlikteki otomatik güncelleme notu kaldırıldı.
+- Liderlik tablosuna son beş sonuç için kişi bazında doğru, yanlış ve tahmin yok göstergeleri eklendi; dar ekranda tablo katılımcı kartlarına dönüşür.
+- Maç merkezi alt açıklaması kaldırıldı, yönetim sekmesi simgeye indirildi.
 
 ### Veri ve yayın notu
 

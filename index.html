@@ -4,20 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#10141d">
-    <meta name="description" content="2026/27 Şampiyonlar Ligi Tahmin Ligi sezon paneli">
-    <title>2026/27 Şampiyonlar Ligi · Tahmin Ligi</title>
+    <meta name="description" content="2026/27 Şampiyonlar Ligi sezon paneli">
+    <title>2026/27 Şampiyonlar Ligi · _crew</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="app-shell">
         <header class="topbar">
-            <a class="brand" href="#overview" aria-label="Tahmin Ligi ana sayfa">
-                <span class="brand-mark" aria-hidden="true">✦</span>
+            <a class="brand" href="#overview" aria-label="_crew · Şampiyonlar Ligi">
                 <img class="brand-ucl-logo" src="assets/uefa-champions-league.svg" alt="UEFA Şampiyonlar Ligi">
-                <span class="brand-copy"><strong>TAHMİN LİGİ</strong><small>ŞAMPİYONLAR LİGİ · 2026/27</small></span>
+                <span class="brand-divider" aria-hidden="true"></span>
+                <img class="brand-crew-logo" src="assets/crew-wordmark.png" alt="_crew">
             </a>
             <div class="topbar-tools">
-                <span id="syncStatus" class="sync-pill is-pending"><i></i>Bağlanıyor</span>
+                <span id="syncStatus" class="sync-led is-pending" role="status" aria-label="Veri bağlantısı kuruluyor" title="Veri bağlantısı kuruluyor"><i></i></span>
             </div>
         </header>
 
@@ -26,15 +26,15 @@
             <button class="tab-btn" data-target="leaderboard"><span>♛</span> Liderlik</button>
             <button class="tab-btn" data-target="predictions"><span>⚽</span> Maçlar</button>
             <button class="tab-btn" data-target="stats"><span>▥</span> İstatistikler</button>
-            <button class="tab-btn admin-tab" data-target="admin"><span>⚙</span> Yönetim</button>
+            <button class="tab-btn admin-tab" data-target="admin" aria-label="Yönetim" title="Yönetim"><span aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 8.2a3.8 3.8 0 1 0 0 7.6 3.8 3.8 0 0 0 0-7.6Zm9 4.9v-2.2l-2.1-.6a7.3 7.3 0 0 0-.7-1.6l1.1-1.9-1.6-1.6-1.9 1.1a7.3 7.3 0 0 0-1.6-.7L13.6 3h-2.2l-.6 2.1a7.3 7.3 0 0 0-1.6.7L7.3 4.7 5.7 6.3l1.1 1.9a7.3 7.3 0 0 0-.7 1.6L4 10.4v2.2l2.1.6a7.3 7.3 0 0 0 .7 1.6l-1.1 1.9 1.6 1.6 1.9-1.1a7.3 7.3 0 0 0 1.6.7l.6 2.1h2.2l.6-2.1a7.3 7.3 0 0 0 1.6-.7l1.9 1.1 1.6-1.6-1.1-1.9a7.3 7.3 0 0 0 .7-1.6l2.1-.6Z"/></svg></span></button>
         </nav>
 
         <main>
-            <section id="overview" class="tab-content active" aria-label="2026/27 Tahmin Ligi genel bakış">
+            <section id="overview" class="tab-content active" aria-label="2026/27 genel bakış">
                 <article id="matchNightCard" class="match-night-card">
                     <div class="match-night-orbit orbit-one"></div><div class="match-night-orbit orbit-two"></div>
                     <div class="match-night-content"><span class="live-kicker"><i></i> SIRADAKİ MAÇ HAFTASI</span><p id="matchNightTeam" class="match-night-team">ŞAMPİYONLAR LİGİ · 2026/27</p><div id="matchNightFixture" class="next-fixture-list"><strong>Fikstür yükleniyor</strong></div><p id="matchNightMeta" class="match-night-meta"></p></div>
-                    <div class="match-ball" aria-hidden="true">✦</div>
+                    <div class="match-ball" aria-hidden="true">⚽</div>
                     <div id="matchNightCountdown" class="match-countdown"><b>—</b><span>GÜN</span></div>
                 </article>
 
@@ -53,20 +53,20 @@
             </section>
 
             <section id="leaderboard" class="tab-content">
-                <div class="page-heading compact-heading"><div><p class="eyebrow">2026/27 · SIRALAMA</p><h1>Liderlik tablosu</h1><p class="page-subtitle">Puan, doğru tahmin sayısıdır. İsabet oranı yalnızca sonucu girilmiş tahminlerden hesaplanır.</p></div><span class="section-index">01 <i>/</i> 04</span></div>
-                <div class="leaderboard-summary"><span>♛</span><div><strong>Güncel sıralama</strong><small>Sonuç girildiğinde puanlar ve rozetler yenilenir.</small></div><span class="summary-live"><i></i> GÜNCEL</span></div>
-                <div class="panel table-panel"><div class="table-scroll"><table><thead><tr><th>Sıra</th><th>Katılımcı</th><th>Puan</th><th>Doğru</th><th>Başarı</th><th>Rozet koleksiyonu</th></tr></thead><tbody id="leaderboardBody"></tbody></table></div></div>
+                <div class="page-heading compact-heading"><div><p class="eyebrow">2026/27 · SIRALAMA</p><h1>Liderlik tablosu</h1><p class="page-subtitle">Puan, doğru tahmin sayısıdır. İsabet oranı yalnızca sonucu girilmiş tahminlerden hesaplanır.</p></div></div>
+                <div class="panel table-panel"><div class="table-scroll"><table><thead><tr><th>Sıra</th><th>Katılımcı</th><th>Puan</th><th>Doğru</th><th>Başarı</th><th>Son 5 maç</th><th>Rozet koleksiyonu</th></tr></thead><tbody id="leaderboardBody"></tbody></table></div></div>
+                <div class="recent-form-legend" aria-label="Son beş maç işaretleri"><span><i class="is-correct">✓</i> Doğru</span><span><i class="is-incorrect">×</i> Yanlış</span><span><i class="is-empty">—</i> Tahmin yok</span></div>
                 <div id="badgeGuide" class="badge-guide"></div>
             </section>
 
             <section id="predictions" class="tab-content">
-                <div class="page-heading compact-heading"><div><p class="eyebrow">FİKSTÜR · 2026/27</p><h1>Maç merkezi</h1><p class="page-subtitle">Katılımcıların kayıtlı tahminlerini ve maç sonuçlarını görüntüleyin.</p></div><span class="section-index">02 <i>/</i> 04</span></div>
+                <div class="page-heading compact-heading"><div><p class="eyebrow">FİKSTÜR · 2026/27</p><h1>Maç merkezi</h1></div></div>
                 <div class="match-toolbar"><div class="segmented-control" role="group" aria-label="Takım maçlarını filtrele"><button class="team-filter active" data-team="GS"><img src="https://r2.thesportsdb.com/images/media/team/badge/io7jk21767941298.png" alt="" loading="lazy" onerror="this.style.display='none'"><span>Galatasaray</span></button><button class="team-filter" data-team="FB"><img src="https://r2.thesportsdb.com/images/media/team/badge/twxxvs1448199691.png" alt="" loading="lazy" onerror="this.style.display='none'"><span>Fenerbahçe</span></button></div><div class="match-toolbar-meta"><span id="matchFilterCount" class="filter-count"></span><button id="togglePredictionsBtn" class="text-button toggle-predictions" type="button">Tüm tahminleri göster ↓</button></div></div>
                 <div id="predictionsTeamSection" class="team-section gs-section"><div class="team-section-heading"><div><p class="eyebrow">ŞAMPİYONLAR LİGİ</p><h2 id="predictionsTeamTitle">Galatasaray</h2></div><span id="teamRecord" class="team-record">0 maç sonucu</span></div><div class="matches-list" id="predictionsGrid"></div></div>
             </section>
 
             <section id="stats" class="tab-content">
-                <div class="page-heading compact-heading"><div><p class="eyebrow">2026/27 · SEZON RAPORU</p><h1>İstatistikler</h1><p class="page-subtitle">Genel toplamlar, takım sonuçları ve tahmin dağılımı.</p></div><span class="section-index">03 <i>/</i> 04</span></div>
+                <div class="page-heading compact-heading"><div><p class="eyebrow">2026/27 · SEZON RAPORU</p><h1>İstatistikler</h1><p class="page-subtitle">Genel toplamlar, takım sonuçları ve tahmin dağılımı.</p></div></div>
                 <div class="metric-grid stats-metrics"><article class="metric-card"><span class="metric-icon teal">◷</span><p>Sonucu girilen maç</p><strong id="statsResolved">0 / 16</strong><small>Karşılaşma</small></article><article class="metric-card"><span class="metric-icon blue">♧</span><p>Toplam tahmin</p><strong id="statsPredictions">0</strong><small>Kaydedilmiş seçim</small></article><article class="metric-card"><span class="metric-icon gold">✓</span><p>Doğru</p><strong id="statsCorrect">0</strong><small>Sonucu girilmiş tahmin</small></article><article class="metric-card"><span class="metric-icon red">×</span><p>Yanlış</p><strong id="statsWrong">0</strong><small>Sonucu girilmiş tahmin</small></article><article class="metric-card"><span class="metric-icon violet">◷</span><p>Bekleyen</p><strong id="statsPending">0</strong><small>Maç sonucu bekleniyor</small></article><article class="metric-card"><span class="metric-icon teal">◎</span><p>Genel isabet</p><strong id="statsAccuracy">—</strong><small id="statsGraded">Değerlendirilen tahmin yok</small></article></div>
                 <div class="content-grid stats-grid"><article class="panel"><div class="panel-heading"><div><p class="eyebrow">TAKIM SONUÇLARI</p><h2>Galibiyet · beraberlik · mağlubiyet</h2></div></div><div id="teamOutcomeStats" class="team-outcomes"></div></article><article class="panel"><div class="panel-heading"><div><p class="eyebrow">TAHMİN DAĞILIMI</p><h2>Katılımcıların seçimleri</h2></div></div><div id="communitySummary" class="community-summary"></div></article></div>
                 <article class="panel form-panel"><div class="panel-heading"><div><p class="eyebrow">MAÇ BAZINDA</p><h2>Maçlara göre isabet</h2></div><span class="panel-icon">▥</span></div><div id="formChart" class="form-chart"></div></article>
@@ -74,14 +74,14 @@
             </section>
 
             <section id="admin" class="tab-content">
-                <div class="page-heading compact-heading"><div><p class="eyebrow">YÖNETİM ALANI</p><h1>Sonuçları güncelle</h1><p class="page-subtitle">Girilen sonuçlar puanları ve bütün istatistikleri otomatik yeniler.</p></div><span class="section-index">04 <i>/</i> 04</span></div>
+                <div class="page-heading compact-heading"><div><p class="eyebrow">YÖNETİM ALANI</p><h1>Sonuçları güncelle</h1><p class="page-subtitle">Girilen sonuçlar puanları ve bütün istatistikleri otomatik yeniler.</p></div></div>
                 <div class="admin-toolbar"><div class="admin-note"><span>⚙</span><div><strong>Yönetici görünümü</strong><small>Maç sonucunu seçtiğinde otomatik kaydedilir.</small></div></div><div class="admin-actions"><span id="adminSaveStatus" class="save-status"></span><button id="adminSaveBtn" class="button-primary">Tüm değişiklikleri kaydet</button></div></div>
                 <div class="team-section gs-section"><div class="team-section-heading"><div><p class="eyebrow">SONUÇ GİRİŞİ</p><h2 class="team-title">Galatasaray</h2></div></div><div class="matches-grid" id="gsAdminGrid"></div></div>
                 <div class="team-section fb-section"><div class="team-section-heading"><div><p class="eyebrow">SONUÇ GİRİŞİ</p><h2 class="team-title">Fenerbahçe</h2></div></div><div class="matches-grid" id="fbAdminGrid"></div></div>
             </section>
         </main>
 
-        <footer><span>✦ 2026/27 Tahmin Ligi</span><span>Sonuçlar güncellendikçe sezon verileri yenilenir.</span><button id="exportBtn" class="footer-export">Yedek indir ↓</button></footer>
+        <footer><span>_crew · 2026/27</span><span>Şampiyonlar Ligi sezon takibi</span><button id="exportBtn" class="footer-export">Yedek indir ↓</button></footer>
     </div>
     <script type="module" src="app.js"></script>
 </body>

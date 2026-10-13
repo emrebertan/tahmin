@@ -73,8 +73,9 @@ function init() {
     
     onSnapshot(docRef, (docSnap) => {
         const statusEl = document.getElementById('syncStatus');
-        statusEl.textContent = "Senkronize";
-        statusEl.className = "sync-pill is-connected";
+        statusEl.setAttribute('aria-label', 'Veri bağlantısı etkin');
+        statusEl.title = 'Veri bağlantısı etkin';
+        statusEl.className = "sync-led is-connected";
 
         if (docSnap.exists()) {
             appData = docSnap.data() || { users: {}, results: {} };
@@ -96,8 +97,9 @@ function init() {
     }, (error) => {
         console.error("Firebase bağlantı hatası:", error);
         const statusEl = document.getElementById('syncStatus');
-        statusEl.textContent = "Bağlantı Hatası!";
-        statusEl.className = "sync-pill is-error";
+        statusEl.setAttribute('aria-label', 'Veri bağlantısı hatası');
+        statusEl.title = 'Veri bağlantısı hatası';
+        statusEl.className = "sync-led is-error";
     });
 }
 
@@ -494,8 +496,9 @@ function getLeaderboardData() {
 function renderLeaderboard() {
     const tbody = document.getElementById('leaderboardBody');
     const leaderboardData = getLeaderboardData();
+    const recentMatches = getResolvedMatchesInOrder().slice(-5);
     if (leaderboardData.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6">Henüz katılımcı bulunmuyor.</td></tr>';
+        tbody.innerHTML = '<tr class="empty-row"><td colspan="7">Henüz katılımcı bulunmuyor.</td></tr>';
         return;
     }
 
@@ -506,10 +509,20 @@ function renderLeaderboard() {
     tbody.innerHTML = leaderboardData.map((data, index) => {
         const badges = getUserBadges(data.name).map(badge => `<span class="badge-icon" title="${escapeHTML(badge.label)}: ${escapeHTML(badge.title)}" aria-label="${escapeHTML(badge.label)}">${badge.icon}</span>`).join('') || '<span class="empty-note">—</span>';
         const avatar = escapeHTML(data.name.trim().charAt(0) || '?');
+        const recentForm = recentMatches.map(match => {
+            const prediction = appData.users[data.name].predictions?.[match.id];
+            const hasPrediction = prediction !== undefined && prediction !== null && prediction !== '';
+            const exempt = (PARTICIPATION_EXEMPTIONS[data.name] || []).includes(match.id);
+            const state = exempt || !hasPrediction ? 'is-empty' : String(prediction) === String(appData.results[match.id]) ? 'is-correct' : 'is-incorrect';
+            const symbol = state === 'is-correct' ? '✓' : state === 'is-incorrect' ? '×' : '—';
+            const detail = exempt ? 'Katılım öncesi · puan hesabına dahil değil' : hasPrediction ? getPredictionLabel(match, prediction) : 'Tahmin yok';
+            const title = `${match.date} · ${match.home} - ${match.away}: ${state === 'is-correct' ? 'Doğru' : state === 'is-incorrect' ? 'Yanlış' : detail}${state !== 'is-empty' ? ` · ${detail}` : ''}`;
+            return `<span class="form-mark ${state}" title="${escapeHTML(title)}" aria-label="${escapeHTML(title)}">${symbol}</span>`;
+        }).join('');
         return `<tr class="${index < 3 ? `rank-${index + 1}` : ''}">
             <td class="rank-cell">${index < 3 ? ['①', '②', '③'][index] : index + 1}</td>
-            <td><div class="player-cell"><span class="avatar">${avatar}</span><span class="player-name">${escapeHTML(data.name)}</span></div></td>
-            <td class="points-cell">${data.points}</td><td>${data.correct} / ${data.graded}</td><td class="accuracy-cell">%${data.percentage}</td><td><div class="badge-list">${badges}</div></td>
+            <td class="player-column"><div class="player-cell"><span class="avatar">${avatar}</span><span class="player-name">${escapeHTML(data.name)}</span></div></td>
+            <td class="points-cell" data-label="Puan">${data.points}</td><td class="result-count-cell" data-label="Doğru">${data.correct} / ${data.graded}</td><td class="accuracy-cell" data-label="Başarı">%${data.percentage}</td><td class="recent-form-cell" data-label="Son 5 maç"><div class="recent-form">${recentForm || '<span class="form-mark is-empty" title="Henüz sonuç girilmedi">—</span>'.repeat(5)}</div></td><td class="badges-cell" data-label="Rozetler"><div class="badge-list">${badges}</div></td>
         </tr>`;
     }).join('');
 
