@@ -3,99 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2026 Şampiyonlar Ligi Tahmin Ligi</title>
+    <meta name="theme-color" content="#10141d">
+    <meta name="description" content="2026 Şampiyonlar Ligi Tahmin Ligi sezon paneli">
+    <title>2026 Şampiyonlar Ligi · Tahmin Ligi</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header>
-        <div style="display: flex; align-items: center; gap: 1rem;">
-            <h1>2026 Şampiyonlar Ligi Tahmin Ligi</h1>
-            <span id="syncStatus" class="status-badge status-pending">Bağlanıyor...</span>
-        </div>
-        <div class="user-controls">
-            <select id="currentUserSelect"></select>
-        </div>
-    </header>
+    <div class="app-shell">
+        <header class="topbar">
+            <a class="brand" href="#overview" aria-label="Tahmin Ligi ana sayfa">
+                <span class="brand-mark" aria-hidden="true">✦</span>
+                <span class="brand-copy"><strong>TAHMİN LİGİ</strong><small>ŞAMPİYONLAR LİGİ · 2026/27</small></span>
+            </a>
+            <div class="topbar-tools">
+                <label class="user-switch"><span>Görünüm</span><select id="currentUserSelect" aria-label="Kullanıcı görünümü"></select></label>
+                <span id="syncStatus" class="sync-pill is-pending"><i></i>Bağlanıyor</span>
+            </div>
+        </header>
 
-    <nav>
-        <button class="tab-btn active" data-target="leaderboard">Liderlik Tablosu</button>
-        <button class="tab-btn" data-target="predictions">Tahminlerim</button>
-        <button class="tab-btn" data-target="admin">Admin</button>
-    </nav>
+        <nav class="main-nav" aria-label="Ana menü">
+            <button class="tab-btn active" data-target="overview"><span>◈</span> Genel Bakış</button>
+            <button class="tab-btn" data-target="leaderboard"><span>♛</span> Liderlik</button>
+            <button class="tab-btn" data-target="predictions"><span>⚽</span> Maçlar</button>
+            <button class="tab-btn" data-target="stats"><span>▥</span> İstatistikler</button>
+            <button class="tab-btn admin-tab" data-target="admin"><span>⚙</span> Yönetim</button>
+        </nav>
 
-    <main>
-        <section id="leaderboard" class="tab-content active">
-            <div id="matchNightCard" class="match-night-card">
-                <div class="match-night-copy">
-                    <span class="match-night-eyebrow">⚽ Maç gecesi</span>
-                    <h2 id="matchNightFixture">Sıradaki maç yükleniyor</h2>
-                    <p id="matchNightMeta" class="match-night-meta"></p>
+        <main>
+            <section id="overview" class="tab-content active">
+                <div class="page-heading"><div><p class="eyebrow">SEZON PANELİ <span>·</span> 2026/27</p><h1>Avrupa sahnesinde<br><em>tahmin zamanı.</em></h1></div><span class="version-pill">YENİ SEZON <b>V2.0</b></span></div>
+                <article id="matchNightCard" class="match-night-card">
+                    <div class="match-night-orbit orbit-one"></div><div class="match-night-orbit orbit-two"></div>
+                    <div class="match-night-content"><span class="live-kicker"><i></i> SIRADAKİ KARŞILAŞMA</span><p id="matchNightTeam" class="match-night-team">Şampiyonlar Ligi</p><h2 id="matchNightFixture">Fikstür yükleniyor</h2><p id="matchNightMeta" class="match-night-meta"></p></div>
+                    <div class="match-ball" aria-hidden="true">✦</div>
+                    <div id="matchNightCountdown" class="match-countdown"><b>—</b><span>GÜN</span></div>
+                </article>
+
+                <div class="metric-grid">
+                    <article class="metric-card"><span class="metric-icon violet">♛</span><p>Şu an lider</p><strong id="overviewLeader">—</strong><small id="overviewLeaderPoints">0 puan</small></article>
+                    <article class="metric-card"><span class="metric-icon teal">◷</span><p>Tamamlanan maç</p><strong id="overviewResolved">0 / 16</strong><small>Sonuç girilen karşılaşma</small></article>
+                    <article class="metric-card"><span class="metric-icon gold">✦</span><p>Toplam doğru tahmin</p><strong id="overviewCorrect">0</strong><small>Ligin tamamında</small></article>
+                    <article class="metric-card"><span class="metric-icon blue">◎</span><p>Katılımcı</p><strong id="overviewUsers">0</strong><small>Aktif tahminci</small></article>
                 </div>
-                <span class="match-night-ball" aria-hidden="true">⚽</span>
-                <button id="matchNightButton" type="button">Tahminini yap</button>
-            </div>
-            <div class="card table-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Sıra</th>
-                            <th>İsim</th>
-                            <th>Puan</th>
-                            <th>Doğru Tahmin</th>
-                            <th>Başarı %</th>
-                            <th>Rozetler</th>
-                        </tr>
-                    </thead>
-                    <tbody id="leaderboardBody"></tbody>
-                </table>
-            </div>
-        </section>
 
-        <section id="predictions" class="tab-content">
-            <div class="info-box">
-                <strong>Not:</strong> Değişiklikler buluta anlık kaydedilir.
-            </div>
-            <div class="prediction-toolbar">
-                <label for="predictionTeamSelect">Takım maçları</label>
-                <select id="predictionTeamSelect" aria-label="Tahmin edilecek takımın maçlarını seç">
-                    <option value="GS">Galatasaray</option>
-                    <option value="FB">Fenerbahçe</option>
-                </select>
-            </div>
-            <div id="predictionsTeamSection" class="team-section gs-section">
-                <h2 class="team-title" id="predictionsTeamTitle">Galatasaray maçları</h2>
-                <div class="matches-list" id="predictionsGrid"></div>
-            </div>
-        </section>
+                <div class="content-grid overview-grid">
+                    <article class="panel panel-large"><div class="panel-heading"><div><p class="eyebrow">YARIŞIN NABZI</p><h2>İlk üç sırada</h2></div><button class="text-button" data-open-tab="leaderboard">Tüm tablo <span>→</span></button></div><div id="overviewPodium" class="podium-list"></div></article>
+                    <article class="panel"><div class="panel-heading"><div><p class="eyebrow">SONUÇLAR</p><h2>Son düdükler</h2></div><span class="panel-icon">◉</span></div><div id="overviewRecent" class="recent-list"></div></article>
+                </div>
+                <div class="panel season-note"><span class="note-star">✦</span><div><strong>Her maç yeni bir hikâye.</strong><p>Katılımcı tahminleri kilitli. Sonuçlar girildikçe puan tablosu, rozetler ve sezon istatistikleri kendiliğinden yenilenir.</p></div><button class="text-button" data-open-tab="stats">Sezon verileri <span>→</span></button></div>
+            </section>
 
-        <section id="admin" class="tab-content">
-            <div class="info-box warning">
-                <strong>Admin Yetkisi:</strong> Sonuçlar girildiğinde tüm kullanıcıların puanları anlık olarak güncellenir.
-            </div>
+            <section id="leaderboard" class="tab-content">
+                <div class="page-heading compact-heading"><div><p class="eyebrow">SEZON SIRALAMASI</p><h1>Kupa kimin olacak?</h1><p class="page-subtitle">Her doğru sonuç 1 puan. Rozetler formunu ve cesur tahminlerini gösterir.</p></div><span class="section-index">01 <i>/</i> 04</span></div>
+                <div class="leaderboard-summary"><span>♛</span><div><strong>Şampiyonluk yarışı</strong><small>Sonuçlar kaydedildikçe sıralama anlık güncellenir.</small></div><span class="summary-live"><i></i> CANLI TABLO</span></div>
+                <div class="panel table-panel"><div class="table-scroll"><table><thead><tr><th>Sıra</th><th>Katılımcı</th><th>Puan</th><th>Doğru</th><th>Başarı</th><th>Rozet koleksiyonu</th></tr></thead><tbody id="leaderboardBody"></tbody></table></div></div>
+                <div id="badgeGuide" class="badge-guide"></div>
+            </section>
 
-            <div class="admin-save-bar">
-                <button id="adminSaveBtn" class="btn-secondary">Değişiklikleri Firebase'e Kaydet</button>
-                <span id="adminSaveStatus" class="section-subtitle"></span>
-            </div>
-            
-            <div class="team-section gs-section">
-                <h2 class="team-title">Galatasaray Maçları (Admin)</h2>
-                <div class="matches-grid" id="gsAdminGrid"></div>
-            </div>
+            <section id="predictions" class="tab-content">
+                <div class="page-heading compact-heading"><div><p class="eyebrow">FİKSTÜR & TAHMİNLER</p><h1>Maç merkezi</h1><p class="page-subtitle">Tahminler kilitli görünümde. Sonuç ve topluluk dağılımı her maçta.</p></div><span class="section-index">02 <i>/</i> 04</span></div>
+                <div class="match-toolbar"><div class="segmented-control" role="group" aria-label="Takım maçlarını filtrele"><button class="team-filter active" data-team="GS">🔴🟡 Galatasaray</button><button class="team-filter" data-team="FB">🟡🔵 Fenerbahçe</button></div><span id="matchFilterCount" class="filter-count"></span></div>
+                <div id="predictionsTeamSection" class="team-section gs-section"><div class="team-section-heading"><div><p class="eyebrow">ŞAMPİYONLAR LİGİ</p><h2 id="predictionsTeamTitle">Galatasaray</h2></div><span id="teamRecord" class="team-record">0 maç sonucu</span></div><div class="matches-list" id="predictionsGrid"></div></div>
+            </section>
 
-            <div class="team-section fb-section">
-                <h2 class="team-title">Fenerbahçe Maçları (Admin)</h2>
-                <div class="matches-grid" id="fbAdminGrid"></div>
-            </div>
-        </section>
-    </main>
+            <section id="stats" class="tab-content">
+                <div class="page-heading compact-heading"><div><p class="eyebrow">VERİLERİN ARKASINDAKİ HİKÂYE</p><h1>Sezon istatistikleri</h1><p class="page-subtitle">Tüm tahminlerden otomatik hesaplanan sezon özeti.</p></div><span class="section-index">03 <i>/</i> 04</span></div>
+                <div class="metric-grid stats-metrics"><article class="metric-card"><span class="metric-icon teal">◷</span><p>Sonucu girilen</p><strong id="statsResolved">0 / 16</strong><small>Karşılaşma</small></article><article class="metric-card"><span class="metric-icon gold">✦</span><p>Doğru tahmin</p><strong id="statsCorrect">0</strong><small>Toplam isabet</small></article><article class="metric-card"><span class="metric-icon violet">◎</span><p>Genel isabet</p><strong id="statsAccuracy">—</strong><small id="statsGraded">Değerlendirilen tahmin</small></article><article class="metric-card"><span class="metric-icon blue">♧</span><p>Tahmin havuzu</p><strong id="statsPredictions">0</strong><small>Kaydedilmiş tahmin</small></article></div>
+                <div class="content-grid stats-grid"><article class="panel"><div class="panel-heading"><div><p class="eyebrow">TAKIM PERFORMANSI</p><h2>Galibiyet · beraberlik · mağlubiyet</h2></div></div><div id="teamOutcomeStats" class="team-outcomes"></div></article><article class="panel"><div class="panel-heading"><div><p class="eyebrow">TRİBÜNÜN SEÇİMİ</p><h2>Topluluk tahminleri</h2></div></div><div id="communitySummary" class="community-summary"></div></article></div>
+                <article class="panel form-panel"><div class="panel-heading"><div><p class="eyebrow">MAÇ MAÇ FORM</p><h2>Lig ne kadar doğru bildi?</h2></div><span class="panel-icon">▥</span></div><div id="formChart" class="form-chart"></div></article>
+                <article class="panel"><div class="panel-heading"><div><p class="eyebrow">BİREYSEL PERFORMANS</p><h2>En isabetli tahminciler</h2></div><button class="text-button" data-open-tab="leaderboard">Liderliği gör <span>→</span></button></div><div id="accuracyLeaders" class="accuracy-list"></div></article>
+            </section>
 
-    <footer>
-        <div class="data-controls">
-            <button id="exportBtn" class="btn-secondary">Yedek İndir (JSON)</button>
-        </div>
-    </footer>
+            <section id="admin" class="tab-content">
+                <div class="page-heading compact-heading"><div><p class="eyebrow">YÖNETİM ALANI</p><h1>Sonuçları güncelle</h1><p class="page-subtitle">Girilen sonuçlar puanları ve bütün istatistikleri otomatik yeniler.</p></div><span class="section-index">04 <i>/</i> 04</span></div>
+                <div class="admin-toolbar"><div class="admin-note"><span>⚙</span><div><strong>Yönetici görünümü</strong><small>Maç sonucunu seçtiğinde otomatik kaydedilir.</small></div></div><div class="admin-actions"><span id="adminSaveStatus" class="save-status"></span><button id="adminSaveBtn" class="button-primary">Tüm değişiklikleri kaydet</button></div></div>
+                <div class="team-section gs-section"><div class="team-section-heading"><div><p class="eyebrow">SONUÇ GİRİŞİ</p><h2 class="team-title">Galatasaray</h2></div></div><div class="matches-grid" id="gsAdminGrid"></div></div>
+                <div class="team-section fb-section"><div class="team-section-heading"><div><p class="eyebrow">SONUÇ GİRİŞİ</p><h2 class="team-title">Fenerbahçe</h2></div></div><div class="matches-grid" id="fbAdminGrid"></div></div>
+            </section>
+        </main>
 
+        <footer><span>✦ 2026/27 Tahmin Ligi</span><span>Sonuçlar güncellendikçe sezon verileri yenilenir.</span><button id="exportBtn" class="footer-export">Yedek indir ↓</button></footer>
+    </div>
     <script type="module" src="app.js"></script>
 </body>
 </html>
