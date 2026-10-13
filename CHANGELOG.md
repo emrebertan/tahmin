@@ -15,6 +15,9 @@
 - Bağlantı metni, mavi/kırmızı erişilebilir durum LED'iyle değiştirildi; sayfa numaraları ve liderlikteki otomatik güncelleme notu kaldırıldı.
 - Liderlik tablosuna son beş sonuç için kişi bazında doğru, yanlış ve tahmin yok göstergeleri eklendi; dar ekranda tablo katılımcı kartlarına dönüşür.
 - Maç merkezi alt açıklaması kaldırıldı, yönetim sekmesi simgeye indirildi.
+- Genel bakışta maç ve tarihi ayrı satırlara aldım, mobilde bağlantı ışığını logolarla aynı hizaya getirdim.
+- İrfan'ın boş ilk maç tahmini yanlış sayılmaz ve puan getirmez; giriş yok durumu hem maç listesinde hem form kutusunda açıkça gösterilir.
+- Rozet açıklamaları daha doğal Türkçeyle yenilendi; liderlik, maç ve istatistik başlıklarındaki istenmeyen başlık/açıklamalar kaldırıldı.
 
 ### Veri ve yayın notu
 

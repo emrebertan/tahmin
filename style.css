@@ -99,8 +99,8 @@ main { width: 100%; padding: 35px clamp(18px, 4vw, 58px) 60px; flex: 1; }
 .podium-badges { font-size: 14px; margin-left: 4px; }
 .podium-points { font: 700 13px 'Manrope', sans-serif; color: var(--gold-light); }
 .recent-row { justify-content: space-between; gap: 8px; font-size: 11px; }
-.recent-fixture { font-weight: 600; }
-.recent-date { color: var(--muted); font-size: 10px; }
+.recent-fixture { display: block; font-weight: 600; }
+.recent-date { display: block; margin-top: 2px; color: var(--muted); font-size: 10px; }
 .recent-result { color: var(--teal); font-weight: 700; white-space: nowrap; }
 .empty-note { padding: 16px 0; color: var(--muted); font-size: 12px; }
 .table-panel { padding: 0; overflow: hidden; }
@@ -177,7 +177,7 @@ footer { margin-top: auto; padding: 17px clamp(18px, 4vw, 58px); display: flex; 
     .matches-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 620px) {
-    .topbar { align-items: flex-start; flex-direction: column; }.topbar-tools { width: 100%; justify-content: flex-end; }
+    .topbar { align-items: center; flex-direction: row; }.topbar-tools { width: auto; align-self: center; justify-content: flex-end; }
     .main-nav { padding-inline: 12px; }.tab-btn { padding: 13px 11px; font-size: 11px; }.tab-btn span { margin-right: 3px; }.tab-btn.admin-tab { margin-left: 0; }
     main { padding: 23px 14px 40px; }.page-heading { align-items: flex-start; }.page-heading h1 { font-size: 31px; }
     .match-night-card { min-height: 190px; padding: 23px 19px; }.match-night-card h2 { max-width: 75%; font-size: 24px; }.match-night-team { margin-top: 14px; }.match-ball { right: 20%; top: 55px; font-size: 82px; }.match-countdown { min-width: 56px; padding: 9px 0 9px 9px; }.match-countdown b { font-size: 25px; }

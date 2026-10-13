@@ -41,8 +41,8 @@ let selectedTeam = 'GS';
 let saveQueue = Promise.resolve();
 let lastLeaderName = null;
 const RESULT_LABELS = { "3": "Galibiyet", "1": "Beraberlik", "0": "Mağlubiyet" };
-// İrfan joined after the opening fixture; that match is outside his scoring and streak record.
-const PARTICIPATION_EXEMPTIONS = { 'İRFAN SOYDAN': ['m1'] };
+// Irfan joined after the opening fixture; show his missed pick clearly without scoring it as a wrong answer.
+const LATE_JOIN_MISSING_PICKS = { 'İRFAN SOYDAN': ['m1'] };
 const TEAM_LOGOS = {
     'Sporting': 'https://r2.thesportsdb.com/images/media/team/badge/5hiuk71783137875.png',
     'Galatasaray': 'https://r2.thesportsdb.com/images/media/team/badge/io7jk21767941298.png',
@@ -194,11 +194,9 @@ function renderAll() {
 function getUserStats(userName) {
     const user = appData.users[userName];
     if (!user) return { points: 0, correct: 0, incorrect: 0, percentage: 0, totalMatches: MATCH_DATA.length };
-    const exemptMatches = new Set(PARTICIPATION_EXEMPTIONS[userName] || []);
     let points = 0; let correct = 0; let incorrect = 0; let graded = 0;
 
     MATCH_DATA.forEach(match => {
-        if (exemptMatches.has(match.id)) return;
         const actualResult = appData.results[match.id];
         const userPrediction = user.predictions ? user.predictions[match.id] : undefined;
 
@@ -210,7 +208,7 @@ function getUserStats(userName) {
         }
     });
 
-    const totalMatches = MATCH_DATA.length - exemptMatches.size;
+    const totalMatches = MATCH_DATA.length;
     const percentage = graded > 0 ? ((correct / graded) * 100).toFixed(0) : 0;
 
     return { points, correct, incorrect, percentage, totalMatches, graded };
@@ -271,9 +269,9 @@ function getUserBadges(userName) {
     const badges = [];
     if (!user) return badges;
 
-    const exemptMatches = PARTICIPATION_EXEMPTIONS[userName] || [];
-    if (exemptMatches.length) {
-        badges.push({ icon: '🛬', label: 'Sonradan Katıldı', title: `Katılımından önceki ${exemptMatches.length} maç hesaplamaya alınmıyor` });
+    const lateJoinMisses = LATE_JOIN_MISSING_PICKS[userName] || [];
+    if (lateJoinMisses.some(matchId => !user.predictions?.[matchId])) {
+        badges.push({ icon: '🛬', label: 'Sonradan Katıldı', title: 'İlk maç tahmini boştu; yanlış sayılmadı, puan da getirmedi.' });
     }
 
     const resolvedMatches = getResolvedMatchesInOrder();
@@ -282,11 +280,6 @@ function getUserBadges(userName) {
     let riskyHit = false, comeback = false;
 
     resolvedMatches.forEach(match => {
-        if (exemptMatches.includes(match.id)) {
-            currentStreak = 0;
-            currentMissStreak = 0;
-            return;
-        }
         const actual = appData.results[match.id];
         const pred = user.predictions ? user.predictions[match.id] : undefined;
         if (pred === undefined || pred === null || pred === "") {
@@ -314,30 +307,30 @@ function getUserBadges(userName) {
     });
 
     if (maxStreak >= 3) {
-        badges.push({ icon: '🔥', label: 'Doğru Seri', title: `${maxStreak} maç üst üste doğru tahmin` });
+        badges.push({ icon: '🔥', label: 'Doğru Seri', title: `${maxStreak} sonuçlanan maçta üst üste doğru tahmin yaptı.` });
     }
     if (riskyHit) {
-        badges.push({ icon: '🎯', label: 'Sürpriz İsabet', title: 'Az tercih edilen bir tahmini doğru bildi' });
+        badges.push({ icon: '🎯', label: 'Sürpriz İsabet', title: 'Az kişinin seçtiği maç sonucunu doğru tahmin etti.' });
     }
     if (currentMissStreak >= 3) {
-        badges.push({ icon: '🧊', label: 'Soğuk Seri', title: `Son ${currentMissStreak} değerlendirilmiş tahmin yanlış` });
+        badges.push({ icon: '🧊', label: 'Soğuk Seri', title: `Sonuçlanan son ${currentMissStreak} maçta tahmini yanlış çıktı.` });
     }
     if (comeback) {
-        badges.push({ icon: '↩️', label: 'Geri Dönüş', title: 'Üç yanlış tahmin serisinin ardından yeniden doğru bildi' });
+        badges.push({ icon: '↩️', label: 'Geri Dönüş', title: 'En az üç yanlış tahminden sonra yeniden doğru tahmin yaptı.' });
     }
 
     const stats = getUserStats(userName);
     if (stats.correct >= 1) {
-        badges.push({ icon: '✅', label: 'İlk İsabet', title: 'En az bir doğru tahmin yaptı' });
+        badges.push({ icon: '✅', label: 'İlk İsabet', title: 'Sonucu girilen en az bir maçı doğru tahmin etti.' });
     }
     if (stats.correct >= 10) {
-        badges.push({ icon: '🔟', label: '10 İsabet', title: '10 doğru tahmine ulaştı' });
+        badges.push({ icon: '🔟', label: '10 İsabet', title: '10 doğru tahmine ulaştı.' });
     }
     if (stats.graded >= 5 && Number(stats.percentage) >= 70) {
-        badges.push({ icon: '📈', label: 'Yüksek İsabet', title: `En az 5 tahminde %${stats.percentage} isabet` });
+        badges.push({ icon: '📈', label: 'Yüksek İsabet', title: `En az beş değerlendirilmiş tahminde %${stats.percentage} başarı sağladı.` });
     }
     if (stats.graded > 0 && stats.correct === stats.graded) {
-        badges.push({ icon: '💯', label: 'Tam İsabet', title: 'Değerlendirilen tahminlerinin tamamı doğru' });
+        badges.push({ icon: '💯', label: 'Tam İsabet', title: 'Sonucu girilmiş tahminlerinin tamamını doğru bildi.' });
     }
 
     return badges;
@@ -386,9 +379,7 @@ function participantPredictionsHTML(match) {
     const rows = participants.map(([name, user]) => {
         const prediction = user.predictions?.[match.id];
         const hasPrediction = prediction !== undefined && prediction !== null && prediction !== '';
-        const label = hasPrediction
-            ? getPredictionLabel(match, prediction)
-            : (PARTICIPATION_EXEMPTIONS[name] || []).includes(match.id) ? 'Katılım öncesi' : 'Tahmin yok';
+        const label = hasPrediction ? getPredictionLabel(match, prediction) : 'Tahmin yok';
         const grade = hasResult && hasPrediction
             ? `<span class="pick-grade ${String(prediction) === String(result) ? 'is-correct' : 'is-incorrect'}">${String(prediction) === String(result) ? 'Doğru' : 'Yanlış'}</span>`
             : '';
@@ -512,10 +503,9 @@ function renderLeaderboard() {
         const recentForm = recentMatches.map(match => {
             const prediction = appData.users[data.name].predictions?.[match.id];
             const hasPrediction = prediction !== undefined && prediction !== null && prediction !== '';
-            const exempt = (PARTICIPATION_EXEMPTIONS[data.name] || []).includes(match.id);
-            const state = exempt || !hasPrediction ? 'is-empty' : String(prediction) === String(appData.results[match.id]) ? 'is-correct' : 'is-incorrect';
+            const state = !hasPrediction ? 'is-empty' : String(prediction) === String(appData.results[match.id]) ? 'is-correct' : 'is-incorrect';
             const symbol = state === 'is-correct' ? '✓' : state === 'is-incorrect' ? '×' : '—';
-            const detail = exempt ? 'Katılım öncesi · puan hesabına dahil değil' : hasPrediction ? getPredictionLabel(match, prediction) : 'Tahmin yok';
+            const detail = hasPrediction ? getPredictionLabel(match, prediction) : 'Tahmin yok';
             const title = `${match.date} · ${match.home} - ${match.away}: ${state === 'is-correct' ? 'Doğru' : state === 'is-incorrect' ? 'Yanlış' : detail}${state !== 'is-empty' ? ` · ${detail}` : ''}`;
             return `<span class="form-mark ${state}" title="${escapeHTML(title)}" aria-label="${escapeHTML(title)}">${symbol}</span>`;
         }).join('');
@@ -526,7 +516,7 @@ function renderLeaderboard() {
         </tr>`;
     }).join('');
 
-    document.getElementById('badgeGuide').innerHTML = '<span>🔥 Doğru Seri · art arda 3 doğru</span><span>🧊 Soğuk Seri · art arda 3 yanlış</span><span>↩️ Geri Dönüş · 3 yanlış sonrası doğru</span><span>🎯 Sürpriz İsabet · az seçilen tahmin doğru</span><span>✅ İlk İsabet · en az 1 doğru</span><span>🔟 10 İsabet · 10 doğru tahmin</span><span>📈 Yüksek İsabet · %70 ve en az 5 değerlendirme</span><span>💯 Tam İsabet · değerlendirilenlerin hepsi doğru</span><span>🛬 Sonradan Katıldı · katılım öncesi maç hesap dışı</span>';
+    document.getElementById('badgeGuide').innerHTML = '<span>🔥 Doğru Seri · Sonuçlanan en az 3 maçta üst üste doğru tahmin</span><span>🧊 Soğuk Seri · Sonuçlanan en az 3 maçta art arda yanlış tahmin</span><span>↩️ Geri Dönüş · En az 3 yanlış tahminden sonra doğru tahmin</span><span>🎯 Sürpriz İsabet · Az kişinin seçtiği maç sonucunu doğru tahmin</span><span>✅ İlk İsabet · Sonucu girilen en az 1 maçı doğru tahmin</span><span>🔟 10 İsabet · 10 doğru tahmine ulaştı</span><span>📈 Yüksek İsabet · En az 5 değerlendirilmiş tahminde %70 veya üzeri başarı</span><span>💯 Tam İsabet · Sonucu girilen tahminlerin tamamı doğru</span><span>🛬 Sonradan Katıldı · İlk maç tahmini boştu; yanlış sayılmadı, puan da getirmedi</span>';
 }
 
 function getAggregateStats() {
