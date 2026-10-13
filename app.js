@@ -41,6 +41,8 @@ let selectedTeam = 'GS';
 let saveQueue = Promise.resolve();
 let lastLeaderName = null;
 const RESULT_LABELS = { "3": "Galibiyet", "1": "Beraberlik", "0": "Mağlubiyet" };
+// İrfan joined after the opening fixture; that match is outside his scoring and streak record.
+const PARTICIPATION_EXEMPTIONS = { 'İRFAN SOYDAN': ['m1'] };
 const TEAM_LOGOS = {
     'Sporting': 'https://r2.thesportsdb.com/images/media/team/badge/5hiuk71783137875.png',
     'Galatasaray': 'https://r2.thesportsdb.com/images/media/team/badge/io7jk21767941298.png',
@@ -183,10 +185,11 @@ function renderAll() {
 function getUserStats(userName) {
     const user = appData.users[userName];
     if (!user) return { points: 0, correct: 0, incorrect: 0, percentage: 0, totalMatches: MATCH_DATA.length };
-    
+    const exemptMatches = new Set(PARTICIPATION_EXEMPTIONS[userName] || []);
     let points = 0; let correct = 0; let incorrect = 0; let graded = 0;
 
     MATCH_DATA.forEach(match => {
+        if (exemptMatches.has(match.id)) return;
         const actualResult = appData.results[match.id];
         const userPrediction = user.predictions ? user.predictions[match.id] : undefined;
 
@@ -198,7 +201,7 @@ function getUserStats(userName) {
         }
     });
 
-    const totalMatches = MATCH_DATA.length;
+    const totalMatches = MATCH_DATA.length - exemptMatches.size;
     const percentage = graded > 0 ? ((correct / graded) * 100).toFixed(0) : 0;
 
     return { points, correct, incorrect, percentage, totalMatches, graded };
@@ -259,13 +262,22 @@ function getUserBadges(userName) {
     const badges = [];
     if (!user) return badges;
 
+    const exemptMatches = PARTICIPATION_EXEMPTIONS[userName] || [];
+    if (exemptMatches.length) {
+        badges.push({ icon: '🛬', label: 'Sonradan Katıldı', title: `Katılımından önceki ${exemptMatches.length} maç hesaplamaya alınmıyor` });
+    }
+
     const resolvedMatches = getResolvedMatchesInOrder();
-    if (resolvedMatches.length === 0) return badges;
 
     let maxStreak = 0, currentStreak = 0, currentMissStreak = 0;
-    let riskyHit = false;
+    let riskyHit = false, comeback = false;
 
     resolvedMatches.forEach(match => {
+        if (exemptMatches.includes(match.id)) {
+            currentStreak = 0;
+            currentMissStreak = 0;
+            return;
+        }
         const actual = appData.results[match.id];
         const pred = user.predictions ? user.predictions[match.id] : undefined;
         if (pred === undefined || pred === null || pred === "") {
@@ -278,6 +290,7 @@ function getUserBadges(userName) {
         if (isHit) {
             currentStreak++;
             maxStreak = Math.max(maxStreak, currentStreak);
+            if (currentMissStreak >= 3) comeback = true;
             currentMissStreak = 0;
 
             const dist = getMatchDistribution(match.id);
@@ -299,6 +312,9 @@ function getUserBadges(userName) {
     }
     if (currentMissStreak >= 3) {
         badges.push({ icon: '🧊', label: 'Soğuk Seri', title: `Son ${currentMissStreak} değerlendirilmiş tahmin yanlış` });
+    }
+    if (comeback) {
+        badges.push({ icon: '↩️', label: 'Geri Dönüş', title: 'Üç yanlış tahmin serisinin ardından yeniden doğru bildi' });
     }
 
     const stats = getUserStats(userName);
@@ -463,7 +479,7 @@ function renderLeaderboard() {
         </tr>`;
     }).join('');
 
-    document.getElementById('badgeGuide').innerHTML = '<span>🔥 Doğru Seri · art arda 3 doğru</span><span>🧊 Soğuk Seri · art arda 3 yanlış</span><span>🎯 Sürpriz İsabet · az seçilen tahmin doğru</span><span>✅ İlk İsabet · en az 1 doğru</span><span>🔟 10 İsabet · 10 doğru tahmin</span><span>📈 Yüksek İsabet · %70 ve en az 5 değerlendirme</span><span>💯 Tam İsabet · değerlendirilenlerin hepsi doğru</span>';
+    document.getElementById('badgeGuide').innerHTML = '<span>🔥 Doğru Seri · art arda 3 doğru</span><span>🧊 Soğuk Seri · art arda 3 yanlış</span><span>↩️ Geri Dönüş · 3 yanlış sonrası doğru</span><span>🎯 Sürpriz İsabet · az seçilen tahmin doğru</span><span>✅ İlk İsabet · en az 1 doğru</span><span>🔟 10 İsabet · 10 doğru tahmin</span><span>📈 Yüksek İsabet · %70 ve en az 5 değerlendirme</span><span>💯 Tam İsabet · değerlendirilenlerin hepsi doğru</span><span>🛬 Sonradan Katıldı · katılım öncesi maç hesap dışı</span>';
 }
 
 function getAggregateStats() {
@@ -556,30 +572,64 @@ function renderStatistics() {
     document.getElementById('accuracyLeaders').innerHTML = topAccuracy.length ? topAccuracy.map((player, index) => `<div class="accuracy-row"><span class="podium-rank">${String(index + 1).padStart(2, '0')}</span><span class="avatar">${escapeHTML(player.name.trim().charAt(0) || '?')}</span><span class="accuracy-name">${escapeHTML(player.name)}</span><span class="accuracy-meta">${player.correct}/${player.graded} doğru</span><span class="accuracy-rate">%${player.percentage}</span></div>`).join('') : '<p class="empty-note">Değerlendirilen ilk maçtan sonra isabet sıralaması oluşacak.</p>';
 }
 
+function getMatchWeeks() {
+    const ordered = MATCH_DATA.slice().sort((a, b) => parseDate(a.date).localeCompare(parseDate(b.date)));
+    const weeks = [];
+    ordered.forEach(match => {
+        const currentWeek = weeks[weeks.length - 1];
+        const previousMatch = currentWeek?.matches[currentWeek.matches.length - 1];
+        const daysApart = previousMatch
+            ? (new Date(`${parseDate(match.date)}T00:00:00`) - new Date(`${parseDate(previousMatch.date)}T00:00:00`)) / 86400000
+            : Infinity;
+        if (!currentWeek || daysApart > 2 || currentWeek.matches.some(item => item.team === match.team)) {
+            weeks.push({ matches: [match] });
+        } else {
+            currentWeek.matches.push(match);
+        }
+    });
+    return weeks;
+}
+
 function renderMatchNightCard() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const unresolved = MATCH_DATA.filter(match => appData.results[match.id] === undefined || appData.results[match.id] === null || appData.results[match.id] === '')
-        .sort((a, b) => parseDate(a.date).localeCompare(parseDate(b.date)));
-    const nextMatch = unresolved.find(match => new Date(`${parseDate(match.date)}T00:00:00`) >= today) || unresolved[0];
+    const weeks = getMatchWeeks();
+    const activeWeekIndex = weeks.findIndex(week => week.matches.some(match => {
+        const result = appData.results[match.id];
+        return result === undefined || result === null || result === '';
+    }));
     const fixture = document.getElementById('matchNightFixture');
     const meta = document.getElementById('matchNightMeta');
     const team = document.getElementById('matchNightTeam');
     const countdown = document.getElementById('matchNightCountdown');
-    if (!nextMatch) {
+    if (activeWeekIndex === -1) {
         team.textContent = 'SEZON TAMAMLANDI';
-        fixture.textContent = 'Bütün maçların sonucu girildi';
-        meta.textContent = '2026/27 sezon tablosu son hâlinde.';
+        fixture.innerHTML = '<strong>Bütün maçların sonucu girildi</strong>';
+        meta.textContent = '2026/27 sezon tablosu güncel.';
         countdown.innerHTML = '<b>✓</b><span>TAMAM</span>';
         return;
     }
-    const date = new Date(`${parseDate(nextMatch.date)}T00:00:00`);
-    const days = Math.max(0, Math.round((date - today) / 86400000));
-    const isPast = date < today;
-    team.textContent = `${getTeamName(nextMatch.team).toUpperCase()} · ŞAMPİYONLAR LİGİ`;
-    fixture.textContent = `${nextMatch.home}  –  ${nextMatch.away}`;
-    meta.textContent = `${date.toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long' })} · ${isPast ? 'Sonuç girişi bekleniyor' : days === 0 ? 'Bugün maç günü' : 'Fikstürde sıradaki maç'}`;
-    countdown.innerHTML = `<b>${isPast || days === 0 ? '•' : days}</b><span>${isPast ? 'BEKLİYOR' : days === 0 ? 'BUGÜN' : 'GÜN KALDI'}</span>`;
+    const week = weeks[activeWeekIndex];
+    const unresolved = week.matches.filter(match => {
+        const result = appData.results[match.id];
+        return result === undefined || result === null || result === '';
+    });
+    const pendingFixtures = unresolved.map(match => ({ match, date: new Date(`${parseDate(match.date)}T00:00:00`) }));
+    const nextFixture = pendingFixtures.find(item => item.date >= today) || pendingFixtures[0];
+    const days = Math.max(0, Math.round((nextFixture.date - today) / 86400000));
+    const isPast = nextFixture.date < today;
+
+    team.textContent = `ŞAMPİYONLAR LİGİ · ${activeWeekIndex + 1}. HAFTA`;
+    fixture.innerHTML = week.matches.slice().sort((a, b) => parseDate(a.date).localeCompare(parseDate(b.date))).map(match => {
+        const result = appData.results[match.id];
+        const resultLabel = result !== undefined && result !== null && result !== ''
+            ? `${getTeamName(match.team)} · ${RESULT_LABELS[String(result)] || 'Sonuç girildi'}`
+            : 'Sonuç bekleniyor';
+        const statusClass = result !== undefined && result !== null && result !== '' ? 'is-complete' : '';
+        return `<div class="next-fixture-card">${matchTeamsHTML(match)}<div class="next-fixture-meta"><span>${escapeHTML(match.date)}</span><strong class="${statusClass}">${escapeHTML(resultLabel)}</strong></div></div>`;
+    }).join('');
+    meta.textContent = `${unresolved.length} maç sonucu bekleniyor · Haftanın tüm sonuçları girilince sonraki haftaya geçilir`;
+    countdown.innerHTML = `<b>${isPast || days === 0 ? '•' : days}</b><span>${isPast ? 'SONUÇ' : days === 0 ? 'BUGÜN' : 'GÜN KALDI'}</span>`;
 }
 
 document.addEventListener('DOMContentLoaded', init);

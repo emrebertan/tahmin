@@ -22,6 +22,7 @@
 }
 
 * { box-sizing: border-box; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 html { scroll-behavior: smooth; }
 body { margin: 0; background: radial-gradient(ellipse at 52% -25%, rgba(74, 84, 125, .21), transparent 45%), var(--bg); color: var(--text); font-family: 'DM Sans', 'Segoe UI', sans-serif; line-height: 1.55; min-height: 100vh; }
 button, select { color: inherit; font: inherit; }
@@ -230,6 +231,45 @@ footer { margin-top: auto; padding: 17px clamp(18px, 4vw, 58px); display: flex; 
 .matches-grid .team-unit strong { font-size: 10px; }
 .matches-grid .team-crest { flex-basis: 34px; width: 34px; height: 34px; }
 .matches-grid .match-versus { font-size: 7px; }
+.brand-ucl-logo { width: 72px; height: 36px; margin-right: 3px; object-fit: contain; filter: brightness(0) invert(1); opacity: .9; }
+.team-filter { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.team-filter img { width: 25px; height: 25px; flex: 0 0 25px; object-fit: contain; }
+.match-night-card { min-height: 258px; }
+.match-night-content { width: calc(100% - 118px); }
+.next-fixture-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 10px; }
+.next-fixture-card { min-width: 0; padding: 11px 12px; border: 1px solid rgba(255,255,255,.11); border-radius: 13px; background: rgba(9,13,19,.37); }
+.next-fixture-card .team-pair { grid-template-columns: minmax(0, 1fr) 20px minmax(0, 1fr); gap: 6px; }
+.next-fixture-card .team-unit { gap: 7px; }
+.next-fixture-card .team-unit strong { font-size: 10px; }
+.next-fixture-card .team-crest { flex-basis: 34px; width: 34px; height: 34px; }
+.next-fixture-card .match-versus { font-size: 8px; }
+.next-fixture-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 9px; color: var(--muted); font-size: 9px; }
+.next-fixture-meta strong { color: var(--gold-light); font-size: 9px; }
+.next-fixture-meta .is-complete { color: var(--teal); }
+
+@media (max-width: 960px) {
+    .next-fixture-list { grid-template-columns: 1fr; gap: 7px; }
+    .next-fixture-card { padding: 8px 10px; }
+    .match-night-card { min-height: 265px; }
+}
+@media (max-width: 620px) {
+    .brand-ucl-logo { width: 58px; height: 30px; }
+    .team-filter { gap: 5px; }
+    .team-filter img { width: 22px; height: 22px; flex-basis: 22px; }
+    .match-night-card { display: block; min-height: auto; padding: 52px 14px 16px; }
+    .match-night-content { width: 100%; }
+    .match-night-team { margin: 9px 0 0; }
+    .next-fixture-list { grid-template-columns: 1fr; }
+    .next-fixture-card .team-pair { grid-template-columns: minmax(0, 1fr) 22px minmax(0, 1fr); }
+    .next-fixture-card .team-unit { flex-direction: column; gap: 4px; text-align: center; }
+    .next-fixture-card .team-crest { flex-basis: 31px; width: 31px; height: 31px; }
+    .match-countdown { position: absolute; top: 8px; right: 12px; min-width: 58px; padding: 4px 0 4px 6px; border-left: 0; }
+    .match-countdown b { font-size: 23px; }
+    .match-countdown span { font-size: 8px; }
+    .match-ball { display: none; }
+    .match-night-orbit { width: 180px; height: 180px; right: -48px; top: -75px; }
+    .orbit-two { width: 130px; height: 130px; right: -22px; top: -49px; }
+}
 
 @media (max-width: 960px) {
     .stats-metrics { grid-template-columns: repeat(2, minmax(0,1fr)); }
