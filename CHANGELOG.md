@@ -1,15 +1,12 @@
-# Sürüm notları
+# Sezon paneli yenilemesi
 
-## 2.0 — Şampiyonlar Ligi sezon paneli
-
-- Arayüz 2026/27 sezonu için yenilendi; başlık ve marka alanı güncellendi.
-- Genel Bakış sekmesine sıradaki maç, sezon özeti, ilk üç ve son sonuçlar eklendi.
-- Liderlik tablosunda puan, tamamlanan sonuçlardaki isabet oranı ve rozet açıklamaları bir araya getirildi.
-- Maç Merkezi'nde Galatasaray/Fenerbahçe filtresi ve yatay, okunaklı maç satırları kullanılıyor. Tahminler katılımcılar adına kilitli kalıyor.
-- İstatistikler sekmesi maç sonuçlarından otomatik takım performansı, topluluk tahmini dağılımı, maç başına isabet ve tahminci formu hesaplıyor.
-- Yönetim ekranından sonuç girme, dışa aktarma ve Firebase senkronizasyonu korunuyor.
-- Mobil görünüm, odak göstergeleri ve azaltılmış hareket tercihi iyileştirildi.
+- 2026/27 sezon başlığı ve arayüz metinleri sadeleştirildi.
+- Ana ekranda lig geneli için toplam, doğru, yanlış ve bekleyen tahmin sayıları eklendi. İsabet oranı yalnızca değerlendirilmiş tahminlerden hesaplanır; tahmin girilmemiş maçlar yanlış sayılmaz.
+- Kişi seçici kaldırıldı. Maç merkezinde herkesin tahmin dağılımı, maç sonucu, tarih ve takım armaları gösterilir.
+- Liderlik tablosunda rozetler korunup açıklamaları netleştirildi; doğru seri, soğuk seri, sürpriz isabet ve isabet eşiği rozetleri eklendi.
+- Sezon istatistikleri takım sonuçları, topluluk tercihleri ve maç bazında isabet oranını içerir.
+- Yönetim ekranı, sonuç kaydı, yedek indirme ve Firebase veri şeması korunmuştur.
 
 ### Veri ve yayın notu
 
-Mevcut Firestore koleksiyon/doküman adı ve kullanıcı/tahmin şeması korunmuştur. Yeni istatistikler saklanan veriden istemci tarafında hesaplanır; veri göçü gerekmez.
+Mevcut Firestore dokümanı ve kullanıcı/tahmin şeması korunur. İstatistikler kaydedilmiş veriden istemci tarafında hesaplanır; veri göçü gerekmez.
