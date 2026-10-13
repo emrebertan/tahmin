@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Avrupa Tahmin Ligi</title>
+    <title>2026 Şampiyonlar Ligi Tahmin Ligi</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 </head>
 <body>
     <header>
         <div style="display: flex; align-items: center; gap: 1rem;">
-            <h1>Avrupa Tahmin Ligi</h1>
+            <h1>2026 Şampiyonlar Ligi Tahmin Ligi</h1>
             <span id="syncStatus" class="status-badge status-pending">Bağlanıyor...</span>
         </div>
         <div class="user-controls">
@@ -21,13 +20,20 @@
     <nav>
         <button class="tab-btn active" data-target="leaderboard">Liderlik Tablosu</button>
         <button class="tab-btn" data-target="predictions">Tahminlerim</button>
-        <button class="tab-btn" data-target="stats">İstatistikler</button>
-        <button class="tab-btn" data-target="h2h">Head-to-Head</button>
         <button class="tab-btn" data-target="admin">Admin</button>
     </nav>
 
     <main>
         <section id="leaderboard" class="tab-content active">
+            <div id="matchNightCard" class="match-night-card">
+                <div class="match-night-copy">
+                    <span class="match-night-eyebrow">⚽ Maç gecesi</span>
+                    <h2 id="matchNightFixture">Sıradaki maç yükleniyor</h2>
+                    <p id="matchNightMeta" class="match-night-meta"></p>
+                </div>
+                <span class="match-night-ball" aria-hidden="true">⚽</span>
+                <button id="matchNightButton" type="button">Tahminini yap</button>
+            </div>
             <div class="card table-responsive">
                 <table>
                     <thead>
@@ -37,6 +43,7 @@
                             <th>Puan</th>
                             <th>Doğru Tahmin</th>
                             <th>Başarı %</th>
+                            <th>Rozetler</th>
                         </tr>
                     </thead>
                     <tbody id="leaderboardBody"></tbody>
@@ -48,122 +55,16 @@
             <div class="info-box">
                 <strong>Not:</strong> Değişiklikler buluta anlık kaydedilir.
             </div>
-            
-            <div class="team-section gs-section">
-                <h2 class="team-title">Galatasaray Maçları</h2>
-                <div class="matches-grid" id="gsPredictionsGrid"></div>
+            <div class="prediction-toolbar">
+                <label for="predictionTeamSelect">Takım maçları</label>
+                <select id="predictionTeamSelect" aria-label="Tahmin edilecek takımın maçlarını seç">
+                    <option value="GS">Galatasaray</option>
+                    <option value="FB">Fenerbahçe</option>
+                </select>
             </div>
-
-            <div class="team-section fb-section">
-                <h2 class="team-title">Fenerbahçe Maçları</h2>
-                <div class="matches-grid" id="fbPredictionsGrid"></div>
-            </div>
-        </section>
-
-        <section id="stats" class="tab-content">
-            <div class="stats-toggle">
-                <button class="stats-toggle-btn active" data-stats-view="individual">Bireysel</button>
-                <button class="stats-toggle-btn" data-stats-view="general">Genel</button>
-            </div>
-
-            <div id="individualStatsView" class="stats-view active">
-                <div class="card">
-                    <h2 id="statsUserName">Kullanıcı İstatistikleri</h2>
-                    <p class="section-subtitle">Formda mısın yoksa dip mi yapıyorsun, hep birlikte görelim 💪</p>
-                    <div class="stats-grid">
-                        <div class="stat-box">
-                            <h3>Toplam Puan</h3>
-                            <p id="statTotalPoints">0</p>
-                        </div>
-                        <div class="stat-box">
-                            <h3>Doğru Tahmin</h3>
-                            <p id="statCorrect">0</p>
-                        </div>
-                        <div class="stat-box">
-                            <h3>Yanlış Tahmin</h3>
-                            <p id="statIncorrect">0</p>
-                        </div>
-                        <div class="stat-box">
-                            <h3>Başarı Yüzdesi</h3>
-                            <p id="statPercentage">%0</p>
-                        </div>
-                        <div class="stat-box">
-                            <h3>Galatasaray Puanı</h3>
-                            <p id="statGsPoints">0</p>
-                        </div>
-                        <div class="stat-box">
-                            <h3>Fenerbahçe Puanı</h3>
-                            <p id="statFbPoints">0</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="charts-grid">
-                    <div class="card chart-card">
-                        <h2>Tahmin Dağılımı</h2>
-                        <div class="chart-wrap"><canvas id="statusChart"></canvas></div>
-                    </div>
-                    <div class="card chart-card">
-                        <h2>Galatasaray mı Fenerbahçe mi?</h2>
-                        <div class="chart-wrap"><canvas id="teamChart"></canvas></div>
-                    </div>
-                </div>
-
-                <div class="card table-responsive" style="margin-top: 1.5rem;">
-                    <h2>Maç Bazlı Detay</h2>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Maç</th>
-                                <th>Tarih</th>
-                                <th>Tahminim</th>
-                                <th>Sonuç</th>
-                                <th>Durum</th>
-                            </tr>
-                        </thead>
-                        <tbody id="statsDetailBody"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div id="generalStatsView" class="stats-view">
-                <div class="card">
-                    <h2>Genel Lig İstatistikleri</h2>
-                    <p class="section-subtitle">Kimin abi kimin çırak olduğu burada belli oluyor</p>
-                </div>
-                <div class="charts-grid">
-                    <div class="card chart-card">
-                        <h2>Ligde Kim Abi Kim Değil</h2>
-                        <div class="chart-wrap"><canvas id="leagueChart"></canvas></div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section id="h2h" class="tab-content">
-            <div class="card">
-                <h2>İkili Karşılaştırma (Head-to-Head)</h2>
-                <p class="section-subtitle">İki isim seç, kim nereden farklı düşünmüş anında görelim</p>
-                <div class="h2h-selectors">
-                    <select id="h2hUserA"></select>
-                    <span class="h2h-vs">VS</span>
-                    <select id="h2hUserB"></select>
-                </div>
-            </div>
-
-            <div class="card table-responsive" style="margin-top: 1.5rem;">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Maç</th>
-                            <th id="h2hUserAHeader">Kullanıcı A</th>
-                            <th id="h2hUserBHeader">Kullanıcı B</th>
-                            <th>Sonuç</th>
-                            <th>Durum</th>
-                        </tr>
-                    </thead>
-                    <tbody id="h2hBody"></tbody>
-                </table>
+            <div id="predictionsTeamSection" class="team-section gs-section">
+                <h2 class="team-title" id="predictionsTeamTitle">Galatasaray maçları</h2>
+                <div class="matches-list" id="predictionsGrid"></div>
             </div>
         </section>
 

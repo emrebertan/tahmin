@@ -38,10 +38,8 @@ const LEGACY_USERS = {
 
 let appData = { users: {}, results: {} };
 let currentUser = null;
+let selectedTeam = 'GS';
 let isSaving = false;
-let statusChartInstance = null;
-let teamChartInstance = null;
-let leagueChartInstance = null;
 let lastLeaderName = null;
 const RESULT_LABELS = { "3": "Galibiyet", "1": "Beraberlik", "0": "Mağlubiyet" };
 
@@ -95,8 +93,10 @@ async function saveDataToFirebase() {
     isSaving = true;
     try {
         await setDoc(docRef, appData);
+        return true;
     } catch (e) {
         console.error("Kayıt hatası:", e);
+        return false;
     } finally {
         isSaving = false;
     }
@@ -109,8 +109,8 @@ function setupEventListeners() {
             
             if(targetId === 'admin') {
                 const pass = prompt("Sadece yetkililer sonuç girebilir. Şifrenizi girin:");
-                const secret = "117-103-114-97-115-305-112-32-98-117-108-100-117-121-115-97-110-32-104-101-108-97-108-32-111-108-115-117-110";
-                const userPass = pass ? pass.split('').map(c => c.charCodeAt(0)).join('-') : '';
+                const secret = "000000";
+                const userPass = pass || '';
                 
                 if(userPass !== secret) {
                     alert("Hatalı şifre!");
@@ -132,18 +132,21 @@ function setupEventListeners() {
         renderAll();
     });
 
-    document.querySelectorAll('.stats-toggle-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const view = e.target.dataset.statsView;
-            document.querySelectorAll('.stats-toggle-btn').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll('.stats-view').forEach(v => v.classList.remove('active'));
-            e.target.classList.add('active');
-            document.getElementById(view === 'general' ? 'generalStatsView' : 'individualStatsView').classList.add('active');
-        });
+    document.getElementById('predictionTeamSelect').addEventListener('change', (e) => {
+        selectedTeam = e.target.value;
+        renderPredictions();
     });
 
-    document.getElementById('h2hUserA').addEventListener('change', renderH2H);
-    document.getElementById('h2hUserB').addEventListener('change', renderH2H);
+    document.getElementById('matchNightButton').addEventListener('click', () => {
+        const matchNight = document.getElementById('matchNightCard');
+        if (!matchNight.dataset.team) return;
+        selectedTeam = matchNight.dataset.team;
+        document.getElementById('predictionTeamSelect').value = selectedTeam;
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.target === 'predictions'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === 'predictions'));
+        renderPredictions();
+        document.getElementById('predictions').scrollIntoView({ behavior: 'smooth' });
+    });
 
     document.getElementById('adminSaveBtn').addEventListener('click', async () => {
         const statusSpan = document.getElementById('adminSaveStatus');
@@ -187,54 +190,14 @@ function updateUserSelect() {
         select.appendChild(option);
     });
 
-    populateH2HSelects(userNames);
-}
-
-function populateH2HSelects(userNames) {
-    const selectA = document.getElementById('h2hUserA');
-    const selectB = document.getElementById('h2hUserB');
-    const prevA = selectA.value;
-    const prevB = selectB.value;
-    selectA.innerHTML = '';
-    selectB.innerHTML = '';
-
-    if (userNames.length === 0) {
-        selectA.innerHTML = '<option value="">Kullanıcı Yok</option>';
-        selectB.innerHTML = '<option value="">Kullanıcı Yok</option>';
-        selectA.disabled = true;
-        selectB.disabled = true;
-        return;
-    }
-
-    selectA.disabled = false;
-    selectB.disabled = false;
-    userNames.forEach(name => {
-        selectA.appendChild(new Option(name, name));
-        selectB.appendChild(new Option(name, name));
-    });
-
-    selectA.value = userNames.includes(prevA) ? prevA : userNames[0];
-    selectB.value = userNames.includes(prevB) ? prevB : (userNames[1] || userNames[0]);
+    document.getElementById('predictionTeamSelect').value = selectedTeam;
 }
 
 function renderAll() {
     renderLeaderboard();
-    if (currentUser) {
-        renderPredictions();
-        renderStats();
-    } else {
-        document.getElementById('gsPredictionsGrid').innerHTML = '<p>Kullanıcı seçilmedi.</p>';
-        document.getElementById('fbPredictionsGrid').innerHTML = '';
-        document.getElementById('statTotalPoints').textContent = '-';
-        document.getElementById('statCorrect').textContent = '-';
-        document.getElementById('statIncorrect').textContent = '-';
-        document.getElementById('statPercentage').textContent = '-';
-        document.getElementById('statGsPoints').textContent = '-';
-        document.getElementById('statFbPoints').textContent = '-';
-        document.getElementById('statsDetailBody').innerHTML = '';
-    }
+    renderPredictions();
     renderAdmin();
-    renderH2H();
+    renderMatchNightCard();
 }
 
 function getUserStats(userName) {
@@ -260,22 +223,6 @@ function getUserStats(userName) {
     const percentage = totalMatches > 0 ? ((correct / totalMatches) * 100).toFixed(0) : 0;
 
     return { points, correct, incorrect, percentage, totalMatches };
-}
-
-function getUserTeamPoints(userName, team) {
-    const user = appData.users[userName];
-    if (!user) return 0;
-    let points = 0;
-    MATCH_DATA.filter(match => match.team === team).forEach(match => {
-        const actualResult = appData.results[match.id];
-        const userPrediction = user.predictions ? user.predictions[match.id] : undefined;
-        if (actualResult !== undefined && actualResult !== null && actualResult !== "" &&
-            userPrediction !== undefined && userPrediction !== null && userPrediction !== "" &&
-            String(actualResult) === String(userPrediction)) {
-            points += 1;
-        }
-    });
-    return points;
 }
 
 function getMatchDistribution(matchId) {
@@ -422,15 +369,23 @@ function generateMatchCardHTML(match, currentPred, actualResult, isLocked, lockR
 }
 
 function renderPredictions() {
-    const gsGrid = document.getElementById('gsPredictionsGrid');
-    const fbGrid = document.getElementById('fbPredictionsGrid');
-    gsGrid.innerHTML = ''; fbGrid.innerHTML = '';
+    const grid = document.getElementById('predictionsGrid');
+    const section = document.getElementById('predictionsTeamSection');
+    const title = document.getElementById('predictionsTeamTitle');
+    const teamName = selectedTeam === 'GS' ? 'Galatasaray' : 'Fenerbahçe';
+    grid.innerHTML = '';
+    title.textContent = `${teamName} maçları`;
+    section.classList.toggle('gs-section', selectedTeam === 'GS');
+    section.classList.toggle('fb-section', selectedTeam === 'FB');
     
-    if (!currentUser || !appData.users[currentUser]) return;
+    if (!currentUser || !appData.users[currentUser]) {
+        grid.innerHTML = '<p>Kullanıcı seçilmedi.</p>';
+        return;
+    }
     
     const user = appData.users[currentUser];
 
-    MATCH_DATA.forEach(match => {
+    MATCH_DATA.filter(match => match.team === selectedTeam).forEach(match => {
         const isUserLocked = user.isLocked === true;
         const hasPrediction = user.predictions && user.predictions[match.id] !== undefined;
         const currentPred = hasPrediction ? user.predictions[match.id] : "";
@@ -442,8 +397,7 @@ function renderPredictions() {
         }
 
         const html = generateMatchCardHTML(match, currentPred, actualResult, isUserLocked, lockReason);
-        if (match.team === 'GS') gsGrid.innerHTML += html;
-        else fbGrid.innerHTML += html;
+        grid.innerHTML += html;
     });
 
     document.querySelectorAll('.prediction-select').forEach(select => {
@@ -457,8 +411,8 @@ function renderPredictions() {
             if (!success) {
                 alert("Tahminin Firebase'e kaydedilemedi! İnternet bağlantını kontrol edip tekrar dene.");
             }
-            renderStats();
             renderLeaderboard();
+            renderMatchNightCard();
         });
     });
 }
@@ -513,6 +467,7 @@ function renderAdmin() {
             }
 
             renderLeaderboard();
+            renderMatchNightCard();
         });
     });
 }
@@ -523,7 +478,7 @@ function renderLeaderboard() {
     const userNames = Object.keys(appData.users || {});
     
     if (userNames.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5">Kayıtlı kullanıcı yok.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6">Kayıtlı kullanıcı yok.</td></tr>';
         return;
     }
 
@@ -546,164 +501,51 @@ function renderLeaderboard() {
         if (index < 3) tr.classList.add(`rank-${index + 1}`);
 
         const badgesHtml = getUserBadges(data.name)
-            .map(b => `<span class="badge-icon" title="${b.label}: ${b.title}">${b.icon}</span>`)
-            .join('');
+            .map(b => `<span class="badge-icon" title="${b.label}: ${b.title}" aria-label="${b.label}">${b.icon}</span>`)
+            .join('') || '<span class="section-subtitle">Henüz rozet yok</span>';
 
         tr.innerHTML = `
             <td>${rankStr}</td>
-            <td><strong>${data.name}</strong>${badgesHtml}</td>
+            <td><strong>${data.name}</strong></td>
             <td>${data.points}</td>
             <td>${data.correct}/${data.totalMatches}</td>
             <td>%${data.percentage}</td>
+            <td><div class="badge-list">${badgesHtml}</div></td>
         `;
         tbody.appendChild(tr);
     });
 }
 
-function renderStats() {
-    if (!currentUser || !appData.users[currentUser]) return;
-    document.getElementById('statsUserName').textContent = `${currentUser} İstatistikleri`;
-    const stats = getUserStats(currentUser);
-    document.getElementById('statTotalPoints').textContent = stats.points;
-    document.getElementById('statCorrect').textContent = stats.correct;
-    document.getElementById('statIncorrect').textContent = stats.incorrect;
-    document.getElementById('statPercentage').textContent = `%${stats.percentage}`;
+function renderMatchNightCard() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const nextMatch = MATCH_DATA
+        .filter(match => {
+            const matchDate = new Date(`${parseDate(match.date)}T00:00:00`);
+            const result = appData.results[match.id];
+            return matchDate >= today && (result === undefined || result === null || result === '');
+        })
+        .sort((a, b) => parseDate(a.date).localeCompare(parseDate(b.date)))[0];
 
-    const gsPoints = getUserTeamPoints(currentUser, 'GS');
-    const fbPoints = getUserTeamPoints(currentUser, 'FB');
-    document.getElementById('statGsPoints').textContent = gsPoints;
-    document.getElementById('statFbPoints').textContent = fbPoints;
-
-    renderStatsDetailTable();
-    renderStatsCharts(stats, gsPoints, fbPoints);
-}
-
-function renderStatsDetailTable() {
-    const tbody = document.getElementById('statsDetailBody');
-    tbody.innerHTML = '';
-    const user = appData.users[currentUser];
-
-    MATCH_DATA.forEach(match => {
-        const actualResult = appData.results[match.id];
-        const userPrediction = user.predictions ? user.predictions[match.id] : undefined;
-        const hasResult = actualResult !== undefined && actualResult !== null && actualResult !== "";
-        const hasPrediction = userPrediction !== undefined && userPrediction !== null && userPrediction !== "";
-
-        let statusHtml = '<span class="status-badge status-pending">Bekleniyor</span>';
-        if (hasResult && hasPrediction) {
-            statusHtml = String(actualResult) === String(userPrediction)
-                ? '<span class="status-badge status-correct">Doğru (+1)</span>'
-                : '<span class="status-badge status-incorrect">Yanlış</span>';
-        } else if (hasResult && !hasPrediction) {
-            statusHtml = '<span class="status-badge status-incorrect">Tahmin Yok</span>';
-        }
-
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td>${match.home} - ${match.away}</td>
-            <td>${match.date}</td>
-            <td>${hasPrediction ? RESULT_LABELS[userPrediction] : '-'}</td>
-            <td>${hasResult ? RESULT_LABELS[actualResult] : '-'}</td>
-            <td>${statusHtml}</td>
-        `;
-        tbody.appendChild(tr);
-    });
-}
-
-function renderStatsCharts(stats, gsPoints, fbPoints) {
-    const statusCtx = document.getElementById('statusChart');
-    const teamCtx = document.getElementById('teamChart');
-    const leagueCtx = document.getElementById('leagueChart');
-    if (!statusCtx || !teamCtx || !leagueCtx || typeof Chart === 'undefined') return;
-
-    const pendingCount = stats.totalMatches - stats.correct - stats.incorrect;
-
-    if (statusChartInstance) statusChartInstance.destroy();
-    statusChartInstance = new Chart(statusCtx, {
-        type: 'doughnut',
-        data: {
-            labels: ['Doğru', 'Yanlış', 'Bekleniyor'],
-            datasets: [{ data: [stats.correct, stats.incorrect, pendingCount], backgroundColor: ['#00b894', '#ff7675', '#6c5ce7'] }]
-        },
-        options: { maintainAspectRatio: false, plugins: { legend: { labels: { color: '#a4b0be' } } } }
-    });
-
-    if (teamChartInstance) teamChartInstance.destroy();
-    teamChartInstance = new Chart(teamCtx, {
-        type: 'bar',
-        data: {
-            labels: ['Galatasaray', 'Fenerbahçe'],
-            datasets: [{ label: 'Puan', data: [gsPoints, fbPoints], backgroundColor: ['#e1b12c', '#fbc531'] }]
-        },
-        options: {
-            maintainAspectRatio: false,
-            scales: { y: { beginAtZero: true, ticks: { color: '#a4b0be' } }, x: { ticks: { color: '#a4b0be' } } },
-            plugins: { legend: { display: false } }
-        }
-    });
-
-    const userNames = Object.keys(appData.users || {});
-    const leagueData = userNames
-        .map(name => ({ name, points: getUserStats(name).points }))
-        .sort((a, b) => b.points - a.points);
-
-    if (leagueChartInstance) leagueChartInstance.destroy();
-    leagueChartInstance = new Chart(leagueCtx, {
-        type: 'bar',
-        data: {
-            labels: leagueData.map(d => d.name),
-            datasets: [{ label: 'Puan', data: leagueData.map(d => d.points), backgroundColor: '#6c5ce7' }]
-        },
-        options: {
-            maintainAspectRatio: false,
-            indexAxis: 'y',
-            scales: { x: { beginAtZero: true, ticks: { color: '#a4b0be' } }, y: { ticks: { color: '#a4b0be' } } },
-            plugins: { legend: { display: false } }
-        }
-    });
-}
-
-function renderH2H() {
-    const tbody = document.getElementById('h2hBody');
-    const selectA = document.getElementById('h2hUserA');
-    const selectB = document.getElementById('h2hUserB');
-    if (!tbody || !selectA || !selectB) return;
-
-    const userA = selectA.value;
-    const userB = selectB.value;
-    document.getElementById('h2hUserAHeader').textContent = userA || 'Kullanıcı A';
-    document.getElementById('h2hUserBHeader').textContent = userB || 'Kullanıcı B';
-
-    tbody.innerHTML = '';
-    if (!userA || !userB || !appData.users[userA] || !appData.users[userB]) {
-        tbody.innerHTML = '<tr><td colspan="5">Karşılaştırmak için iki kullanıcı seçin.</td></tr>';
+    const fixture = document.getElementById('matchNightFixture');
+    const meta = document.getElementById('matchNightMeta');
+    const button = document.getElementById('matchNightButton');
+    const card = document.getElementById('matchNightCard');
+    if (!nextMatch) {
+        fixture.textContent = 'Bu sezonun maçları tamamlandı';
+        meta.textContent = 'Yeni karşılaşmalar eklendiğinde burada görünecek.';
+        button.hidden = true;
+        delete card.dataset.team;
         return;
     }
 
-    MATCH_DATA.forEach(match => {
-        const predA = appData.users[userA].predictions ? appData.users[userA].predictions[match.id] : undefined;
-        const predB = appData.users[userB].predictions ? appData.users[userB].predictions[match.id] : undefined;
-        const actualResult = appData.results[match.id];
-        const hasA = predA !== undefined && predA !== null && predA !== "";
-        const hasB = predB !== undefined && predB !== null && predB !== "";
-
-        let statusHtml = '<span class="status-badge status-pending">Eksik Tahmin</span>';
-        if (hasA && hasB) {
-            statusHtml = String(predA) === String(predB)
-                ? '<span class="h2h-match">Aynı ✓</span>'
-                : '<span class="h2h-diff">Farklı ✗</span>';
-        }
-
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td>${match.home} - ${match.away}</td>
-            <td>${hasA ? RESULT_LABELS[predA] : '-'}</td>
-            <td>${hasB ? RESULT_LABELS[predB] : '-'}</td>
-            <td>${actualResult !== undefined && actualResult !== null && actualResult !== "" ? RESULT_LABELS[actualResult] : '-'}</td>
-            <td>${statusHtml}</td>
-        `;
-        tbody.appendChild(tr);
-    });
+    const date = new Date(`${parseDate(nextMatch.date)}T00:00:00`);
+    const daysUntil = Math.round((date - today) / 86400000);
+    const dateLabel = date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' });
+    fixture.textContent = `${nextMatch.home} – ${nextMatch.away}`;
+    meta.textContent = `${dateLabel} · ${daysUntil === 0 ? 'Bugün maç günü' : `${daysUntil} gün kaldı`} · ${nextMatch.team === 'GS' ? 'Galatasaray' : 'Fenerbahçe'}`;
+    button.hidden = false;
+    card.dataset.team = nextMatch.team;
 }
 
 document.addEventListener('DOMContentLoaded', init);

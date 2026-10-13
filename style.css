@@ -172,24 +172,28 @@ tr:hover { background-color: var(--surface-hover); }
 .match-teams { font-weight: 600; font-size: 1.15rem; text-align: center; color: var(--text-primary); padding: 0.5rem 0; }
 .match-control select { width: 100%; text-align: center; cursor: pointer; font-weight: 500; }
 
-.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-top: 1.5rem; }
-.stat-box { background-color: var(--bg-color); border: 1px solid var(--border-color); border-radius: var(--radius); padding: 2rem; text-align: center; }
-.stat-box h3 { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.8rem; text-transform: uppercase; letter-spacing: 1px; }
-.stat-box p { font-size: 2.5rem; font-weight: 700; color: var(--primary-color); }
-
 .section-subtitle { color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.3rem; }
 
-.charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; margin-top: 1.5rem; }
-.chart-card h2 { font-size: 1.1rem; margin-bottom: 1rem; }
-.chart-wrap { position: relative; height: 280px; }
+.badge-list { display: flex; justify-content: flex-end; gap: 0.45rem; min-width: 100px; }
+.badge-icon { font-size: 1.15rem; cursor: default; }
 
-.stats-toggle { display: flex; gap: 0.6rem; margin-bottom: 1.5rem; }
-.stats-toggle-btn { background-color: var(--surface-color); color: var(--text-secondary); border: 1px solid var(--border-color); }
-.stats-toggle-btn.active { background-color: var(--primary-color); color: #fff; border-color: var(--primary-color); }
-.stats-view { display: none; }
-.stats-view.active { display: block; }
+.prediction-toolbar { display: flex; align-items: center; justify-content: flex-end; gap: 0.8rem; margin-bottom: 1rem; color: var(--text-secondary); }
+.prediction-toolbar select { min-width: 220px; }
+.matches-list { display: flex; flex-direction: column; gap: 0.8rem; }
+.matches-list .match-card { display: grid; grid-template-columns: 150px minmax(180px, 1fr) minmax(220px, 300px); align-items: center; gap: 0.75rem 1.5rem; }
+.matches-list .match-header { grid-column: 1; grid-row: 1; }
+.matches-list .match-teams { grid-column: 2; grid-row: 1; text-align: left; }
+.matches-list .match-control { grid-column: 3; grid-row: 1; }
+.matches-list .community-pulse { grid-column: 2 / 4; }
 
-.badge-icon { margin-left: 0.35rem; font-size: 1rem; cursor: default; }
+.match-night-card { position: relative; overflow: hidden; display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; margin-bottom: 1.5rem; padding: 1.6rem 1.8rem; border: 1px solid rgba(225, 177, 44, 0.45); border-radius: var(--radius); background: radial-gradient(ellipse at 85% 15%, rgba(108, 92, 231, 0.28), transparent 42%), linear-gradient(115deg, #252116, #1a1d24 65%); }
+.match-night-copy { position: relative; z-index: 1; }
+.match-night-eyebrow { color: var(--gs-color); font-size: 0.76rem; font-weight: 800; letter-spacing: 0.15em; text-transform: uppercase; }
+.match-night-card h2 { margin: 0.3rem 0; font-size: clamp(1.25rem, 2.5vw, 1.8rem); }
+.match-night-meta { color: var(--text-secondary); }
+.match-night-ball { position: absolute; right: 22%; top: -40px; font-size: 9rem; opacity: 0.08; transform: rotate(-18deg); pointer-events: none; }
+.match-night-card button { position: relative; z-index: 1; flex-shrink: 0; background: var(--gs-color); color: #161616; }
+.match-night-card button:hover { filter: brightness(1.12); transform: translateY(-1px); }
 
 .community-pulse { display: flex; flex-direction: column; gap: 0.4rem; }
 .community-pulse small { color: var(--text-secondary); font-size: 0.75rem; }
@@ -203,12 +207,6 @@ tr:hover { background-color: var(--surface-hover); }
 .dot-win { background-color: var(--success-color); }
 .dot-draw { background-color: var(--primary-color); }
 .dot-lose { background-color: var(--error-color); }
-
-.h2h-selectors { display: flex; align-items: center; gap: 1rem; margin-top: 1.2rem; flex-wrap: wrap; }
-.h2h-selectors select { flex: 1; min-width: 180px; }
-.h2h-vs { font-weight: 700; color: var(--text-secondary); }
-.h2h-match { color: var(--success-color); font-weight: 700; }
-.h2h-diff { color: var(--error-color); font-weight: 700; }
 
 .confetti-container { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 9999; }
 .confetti-piece {
@@ -241,4 +239,10 @@ footer { background-color: var(--surface-color); padding: 2rem; border-top: 1px 
     #currentUserSelect { width: 100%; }
     nav { padding: 0 1rem; }
     main { padding: 1rem; }
+    .match-night-card { align-items: flex-start; flex-direction: column; }
+    .matches-list .match-card { grid-template-columns: 1fr; gap: 0.55rem; }
+    .matches-list .match-header, .matches-list .match-teams, .matches-list .match-control, .matches-list .community-pulse { grid-column: 1; grid-row: auto; }
+    .matches-list .match-teams { text-align: left; padding: 0; }
+    .prediction-toolbar { justify-content: space-between; }
+    .prediction-toolbar select { min-width: 0; flex: 1; }
 }
