@@ -10,22 +10,22 @@ const docRef = doc(db, "tahmin_ligi", "veri");
 // ==================================================================
 
 const MATCH_DATA = [
-    { id: 'm1', home: 'Sporting', away: 'Galatasaray', date: '09.09.2026', team: 'GS' },
-    { id: 'm2', home: 'Galatasaray', away: 'Barcelona', date: '13.10.2026', team: 'GS' },
-    { id: 'm3', home: 'Lille', away: 'Galatasaray', date: '21.10.2026', team: 'GS' },
-    { id: 'm4', home: 'Galatasaray', away: 'Stuttgart', date: '03.11.2026', team: 'GS' },
-    { id: 'm5', home: 'Galatasaray', away: 'Aston Villa', date: '24.11.2026', team: 'GS' },
-    { id: 'm6', home: 'AEK', away: 'Galatasaray', date: '08.12.2026', team: 'GS' },
-    { id: 'm7', home: 'Galatasaray', away: 'Feyenoord', date: '19.01.2027', team: 'GS' },
-    { id: 'm8', home: 'PSG', away: 'Galatasaray', date: '27.01.2027', team: 'GS' },
-    { id: 'm9', home: 'Fenerbahçe', away: 'Roma', date: '10.09.2026', team: 'FB' },
-    { id: 'm10', home: 'Aston Villa', away: 'Fenerbahçe', date: '14.10.2026', team: 'FB' },
-    { id: 'm11', home: 'Fenerbahçe', away: 'Slavia Prag', date: '20.10.2026', team: 'FB' },
-    { id: 'm12', home: 'Fenerbahçe', away: 'Liverpool', date: '04.11.2026', team: 'FB' },
-    { id: 'm13', home: 'Shakhtar', away: 'Fenerbahçe', date: '25.11.2026', team: 'FB' },
-    { id: 'm14', home: 'LASK', away: 'Fenerbahçe', date: '09.12.2026', team: 'FB' },
-    { id: 'm15', home: 'Fenerbahçe', away: 'Villarreal', date: '20.01.2027', team: 'FB' },
-    { id: 'm16', home: 'Atletico Madrid', away: 'Fenerbahçe', date: '27.01.2027', team: 'FB' }
+    { id: 'm1', week: 1, home: 'Sporting', away: 'Galatasaray', date: '09.09.2026', team: 'GS' },
+    { id: 'm2', week: 2, home: 'Galatasaray', away: 'Barcelona', date: '13.10.2026', team: 'GS' },
+    { id: 'm3', week: 3, home: 'Lille', away: 'Galatasaray', date: '21.10.2026', team: 'GS' },
+    { id: 'm4', week: 4, home: 'Galatasaray', away: 'Stuttgart', date: '03.11.2026', team: 'GS' },
+    { id: 'm5', week: 5, home: 'Galatasaray', away: 'Aston Villa', date: '24.11.2026', team: 'GS' },
+    { id: 'm6', week: 6, home: 'AEK', away: 'Galatasaray', date: '08.12.2026', team: 'GS' },
+    { id: 'm7', week: 7, home: 'Galatasaray', away: 'Feyenoord', date: '19.01.2027', team: 'GS' },
+    { id: 'm8', week: 8, home: 'PSG', away: 'Galatasaray', date: '27.01.2027', team: 'GS' },
+    { id: 'm9', week: 1, home: 'Fenerbahçe', away: 'Roma', date: '10.09.2026', team: 'FB' },
+    { id: 'm10', week: 2, home: 'Aston Villa', away: 'Fenerbahçe', date: '14.10.2026', team: 'FB' },
+    { id: 'm11', week: 3, home: 'Fenerbahçe', away: 'Slavia Prag', date: '20.10.2026', team: 'FB' },
+    { id: 'm12', week: 4, home: 'Fenerbahçe', away: 'Liverpool', date: '04.11.2026', team: 'FB' },
+    { id: 'm13', week: 5, home: 'Shakhtar', away: 'Fenerbahçe', date: '25.11.2026', team: 'FB' },
+    { id: 'm14', week: 6, home: 'LASK', away: 'Fenerbahçe', date: '09.12.2026', team: 'FB' },
+    { id: 'm15', week: 7, home: 'Fenerbahçe', away: 'Villarreal', date: '20.01.2027', team: 'FB' },
+    { id: 'm16', week: 8, home: 'Atletico Madrid', away: 'Fenerbahçe', date: '27.01.2027', team: 'FB' }
 ];
 
 const LEGACY_USERS = {
@@ -143,6 +143,13 @@ function setupEventListeners() {
             document.querySelectorAll('.team-filter').forEach(item => item.classList.toggle('active', item === button));
             renderPredictions();
         });
+    });
+
+    document.getElementById('togglePredictionsBtn').addEventListener('click', () => {
+        const details = [...document.querySelectorAll('#predictionsGrid .prediction-reveal')];
+        const shouldOpen = details.some(item => !item.open);
+        details.forEach(item => { item.open = shouldOpen; });
+        document.getElementById('togglePredictionsBtn').textContent = shouldOpen ? 'Tahminleri gizle ↑' : 'Tüm tahminleri göster ↓';
     });
 
     document.getElementById('adminSaveBtn').addEventListener('click', async () => {
@@ -363,6 +370,32 @@ function matchTeamsHTML(match) {
     return `<div class="team-pair">${teamUnitHTML(match.home)}<span class="match-versus">VS</span>${teamUnitHTML(match.away)}</div>`;
 }
 
+function getPredictionLabel(match, prediction) {
+    if (String(prediction) === '3') return `${getTeamName(match.team)} galibiyeti`;
+    if (String(prediction) === '1') return 'Beraberlik';
+    if (String(prediction) === '0') return `${getTeamName(match.team)} mağlubiyeti`;
+    return 'Tahmin yok';
+}
+
+function participantPredictionsHTML(match) {
+    const participants = Object.entries(appData.users || {}).sort(([nameA], [nameB]) => nameA.localeCompare(nameB, 'tr'));
+    const result = appData.results[match.id];
+    const hasResult = result !== undefined && result !== null && result !== '';
+    const rows = participants.map(([name, user]) => {
+        const prediction = user.predictions?.[match.id];
+        const hasPrediction = prediction !== undefined && prediction !== null && prediction !== '';
+        const label = hasPrediction
+            ? getPredictionLabel(match, prediction)
+            : (PARTICIPATION_EXEMPTIONS[name] || []).includes(match.id) ? 'Katılım öncesi' : 'Tahmin yok';
+        const grade = hasResult && hasPrediction
+            ? `<span class="pick-grade ${String(prediction) === String(result) ? 'is-correct' : 'is-incorrect'}">${String(prediction) === String(result) ? 'Doğru' : 'Yanlış'}</span>`
+            : '';
+        return `<div class="pick-person"><span class="pick-name">${escapeHTML(name)}</span><span class="pick-answer ${hasPrediction ? '' : 'is-empty'}">${escapeHTML(label)}</span>${grade}</div>`;
+    }).join('');
+
+    return `<details class="prediction-reveal"><summary><span>Katılımcı tahminleri</span><b>${participants.length} kişi</b></summary><div class="pick-people">${rows || '<p class="empty-note">Katılımcı bulunmuyor.</p>'}</div></details>`;
+}
+
 function aggregateMatchCardHTML(match) {
     const result = appData.results[match.id];
     const teamName = getTeamName(match.team);
@@ -374,7 +407,7 @@ function aggregateMatchCardHTML(match) {
     return `<article class="match-card match-centre-card">
         <div class="fixture-time"><span>MAÇ ${match.id.slice(1).padStart(2, '0')}</span><strong>${escapeHTML(match.date)}</strong><small>${escapeHTML(teamName)}</small></div>
         <div class="matchup">${matchTeamsHTML(match)}</div>
-        <div class="match-insight">${resultMarkup}${generateCommunityBarHTML(match.id)}<div class="vote-counts"><span>${dist.win} galibiyet</span><span>${dist.draw} beraberlik</span><span>${dist.lose} mağlubiyet</span><b>${dist.total} tahmin</b></div></div>
+        <div class="match-insight">${resultMarkup}${generateCommunityBarHTML(match.id)}<div class="vote-counts"><span>${dist.win} galibiyet</span><span>${dist.draw} beraberlik</span><span>${dist.lose} mağlubiyet</span><b>${dist.total} tahmin</b></div>${participantPredictionsHTML(match)}</div>
     </article>`;
 }
 
@@ -389,6 +422,7 @@ function renderPredictions() {
     section.classList.toggle('gs-section', selectedTeam === 'GS');
     section.classList.toggle('fb-section', selectedTeam === 'FB');
     document.getElementById('matchFilterCount').textContent = `${matches.length} karşılaşma`;
+    document.getElementById('togglePredictionsBtn').textContent = 'Tüm tahminleri göster ↓';
     const played = matches.filter(match => appData.results[match.id] !== undefined && appData.results[match.id] !== null && appData.results[match.id] !== '').length;
     document.getElementById('teamRecord').textContent = `${played} / ${matches.length} sonuçlandı`;
     
@@ -573,21 +607,12 @@ function renderStatistics() {
 }
 
 function getMatchWeeks() {
-    const ordered = MATCH_DATA.slice().sort((a, b) => parseDate(a.date).localeCompare(parseDate(b.date)));
-    const weeks = [];
-    ordered.forEach(match => {
-        const currentWeek = weeks[weeks.length - 1];
-        const previousMatch = currentWeek?.matches[currentWeek.matches.length - 1];
-        const daysApart = previousMatch
-            ? (new Date(`${parseDate(match.date)}T00:00:00`) - new Date(`${parseDate(previousMatch.date)}T00:00:00`)) / 86400000
-            : Infinity;
-        if (!currentWeek || daysApart > 2 || currentWeek.matches.some(item => item.team === match.team)) {
-            weeks.push({ matches: [match] });
-        } else {
-            currentWeek.matches.push(match);
-        }
-    });
-    return weeks;
+    const weekNumbers = [...new Set(MATCH_DATA.map(match => match.week))].sort((a, b) => a - b);
+    return weekNumbers.map(number => ({
+        number,
+        matches: MATCH_DATA.filter(match => match.week === number)
+            .sort((a, b) => parseDate(a.date).localeCompare(parseDate(b.date)))
+    }));
 }
 
 function renderMatchNightCard() {
@@ -619,7 +644,7 @@ function renderMatchNightCard() {
     const days = Math.max(0, Math.round((nextFixture.date - today) / 86400000));
     const isPast = nextFixture.date < today;
 
-    team.textContent = `ŞAMPİYONLAR LİGİ · ${activeWeekIndex + 1}. HAFTA`;
+    team.textContent = `ŞAMPİYONLAR LİGİ · ${week.number}. HAFTA`;
     fixture.innerHTML = week.matches.slice().sort((a, b) => parseDate(a.date).localeCompare(parseDate(b.date))).map(match => {
         const result = appData.results[match.id];
         const resultLabel = result !== undefined && result !== null && result !== ''

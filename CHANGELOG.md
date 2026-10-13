@@ -7,6 +7,8 @@
 - Genel Bakış'ta iki takımı aynı maç haftasında armalarıyla gösteren kart eklendi. Haftanın tüm sonuçları girildiğinde sonraki maç haftası görünür.
 - Maç merkezi takım filtrelerinde renk emojileri yerine kulüp armaları kullanılıyor.
 - Geç katılan İrfan için ilk maç puan ve seri hesaplarının dışında tutulur; katılım rozeti bunu açıklar.
+- Maç merkezinde isim sırasıyla katılımcı tahminleri açılabilir; doğru/yanlış durumu maç sonucu girildikten sonra gösterilir.
+- Mobil başlık için UEFA wordmark'ı beyaz düzenlendi, takım armaları ve maç kartları küçültüldü; küçük ekranda genel bakış başlığı sızıntısı giderildi.
 - Sezon istatistikleri takım sonuçları, topluluk tercihleri ve maç bazında isabet oranını içerir.
 - Yönetim ekranı, sonuç kaydı, yedek indirme ve Firebase veri şeması korunmuştur.
 
